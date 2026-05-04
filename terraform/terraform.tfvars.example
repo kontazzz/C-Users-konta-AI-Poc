@@ -1,0 +1,17 @@
+# このファイルをコピーして terraform.tfvars を作成し、実際の値を設定してください。
+# terraform.tfvars は .gitignore に追加し、絶対にリポジトリへコミットしないこと。
+
+aws_region   = "ap-northeast-1"
+project_name = "ai-native-soc"
+environment  = "dev"
+
+# Splunk HEC の設定
+# Splunk 管理コンソール → 設定 → データの入力 → HTTP イベントコレクター で取得
+splunk_hec_url   = "https://your-splunk-instance:8088"
+splunk_hec_token = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# 任意：デフォルト値から変更したい場合のみ設定
+# splunk_hec_acknowledgment_timeout = 600
+# firehose_retry_duration           = 3600
+# firehose_buffer_size_mb           = 5
+# firehose_buffer_interval_seconds  = 300
