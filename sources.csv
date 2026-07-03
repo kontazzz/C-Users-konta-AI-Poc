@@ -1,0 +1,9 @@
+source_name,source_kind,url,priority,coverage_note
+Royal Canin Japan dog products,official,https://www.royalcanin.com/jp/dogs/products,1,"Use only Japanese non-therapeutic dry dog foods; exclude veterinary-exclusive and therapeutic products"
+Hill's Japan dog food products,official,https://www.hills.co.jp/dog-food,1,"Use only Japanese non-therapeutic dry dog foods; exclude Prescription Diet and veterinary-exclusive products"
+Petline Japan dog food listing,official,https://www.petline.co.jp/dog/,1,"Use only Japanese non-therapeutic dry dog foods; exclude wet foods, snacks, Doctor's Care, and veterinary-exclusive products"
+Manufacturer official product pages,official,,1,"Add one row per manufacturer or brand before automated collection; Japanese dry dog food only"
+Official online shop,retailer,,2,"Use for current SKU availability and official prices where available; Japanese dry dog food only"
+Amazon Japan,marketplace,https://www.amazon.co.jp/,3,"Use only where terms allow; price observations should keep seller and timestamp; Japanese dry dog food only"
+Rakuten Ichiba,marketplace,https://www.rakuten.co.jp/,3,"Use only where terms allow; price observations should keep shop and timestamp; Japanese dry dog food only"
+Yahoo Shopping Japan,marketplace,https://shopping.yahoo.co.jp/,3,"Use only where terms allow; price observations should keep shop and timestamp; Japanese dry dog food only"
