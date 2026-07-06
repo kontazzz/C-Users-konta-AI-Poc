@@ -19,14 +19,14 @@ function warn(label, detail = "") {
   results.push(`  ⚠️ ${label}${detail ? ` — ${detail}` : ""}`);
 }
 
-// 1. Node.js バージョン
-const major = Number(process.versions.node.split(".")[0]);
-if (major >= 18) {
+// 1. Node.js バージョン(node:sqlite を使うため 22.5 以上が必要)
+const [major, minor] = process.versions.node.split(".").map(Number);
+if (major > 22 || (major === 22 && minor >= 5)) {
   ok(`Node.js v${process.versions.node}`);
 } else {
   ng(
     `Node.js のバージョンが古い (v${process.versions.node})`,
-    "https://nodejs.org から LTS 版をインストールし直してください。"
+    "https://nodejs.org から LTS 版(v24以上推奨)をインストールし直してください。"
   );
 }
 
