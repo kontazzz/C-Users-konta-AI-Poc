@@ -17,8 +17,13 @@ function matchesAiKeywords(text: string): boolean {
   const lower = text.toLowerCase();
   return AI_KEYWORDS.some((kw) => {
     if (/^[\x20-\x7e]+$/.test(kw)) {
-      // 英数字キーワードは単語境界っぽくマッチさせる("AI" が "email" 等に反応しないように)
-      const re = new RegExp(`(^|[^a-z0-9])${kw.toLowerCase().replace(/[.*+?^${}()|[\]\\-]/g, "\\$&")}`, "i");
+      // 英数字キーワードは前後を単語境界っぽく区切ってマッチさせる
+      // ("AI" が "email" や "AirPods" 等に反応しないように)。
+      // 日本語・記号が続くのは許す("AIが" 等)。"GPT-" のように記号で終わる
+      // キーワードはそれ自体が境界なので末尾チェックを付けない("GPT-4" にマッチさせる)
+      const escaped = kw.toLowerCase().replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+      const tail = /[a-z0-9]$/i.test(kw) ? "(?![a-z0-9])" : "";
+      const re = new RegExp(`(^|[^a-z0-9])${escaped}${tail}`, "i");
       return re.test(lower);
     }
     return text.includes(kw);

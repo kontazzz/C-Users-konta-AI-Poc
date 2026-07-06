@@ -76,7 +76,9 @@ function atomLink(block: string): string | null {
   const linkTags = block.match(/<(?:[a-zA-Z0-9_-]+:)?link\b[^>]*>/gi) ?? [];
   let fallback: string | null = null;
   for (const tag of linkTags) {
-    const href = tag.match(/href\s*=\s*["']([^"']+)["']/i)?.[1] ?? null;
+    // XML属性値は & が &amp; 等にエスケープされているのでデコードして返す
+    const rawHref = tag.match(/href\s*=\s*["']([^"']+)["']/i)?.[1] ?? null;
+    const href = rawHref ? decodeEntities(rawHref) : null;
     if (!href) continue;
     const rel = tag.match(/rel\s*=\s*["']([^"']+)["']/i)?.[1];
     if (!rel || rel === "alternate") return href;

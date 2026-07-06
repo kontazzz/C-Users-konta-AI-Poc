@@ -19,6 +19,9 @@ const rssFor: Record<string, string> = {
     <item><title>ChatGPTの新機能が公開</title><link>https://gigazine.example/1</link><pubDate>${hoursAgo(3)}</pubDate></item>
     <item><title>新しいemailクライアントのレビュー</title><link>https://gigazine.example/2</link><pubDate>${hoursAgo(4)}</pubDate></item>
     <item><title>人工知能と著作権の行方</title><link>https://gigazine.example/3</link><pubDate>${hoursAgo(5)}</pubDate></item>
+    <item><title>AirPods Pro 3を空港(airport)で試す</title><link>https://gigazine.example/4</link><pubDate>${hoursAgo(6)}</pubDate></item>
+    <item><title>AIが変える製造業の現場</title><link>https://gigazine.example/5</link><pubDate>${hoursAgo(7)}</pubDate></item>
+    <item><title>GPT-5.5の性能検証</title><link>https://gigazine.example/6</link><pubDate>${hoursAgo(8)}</pubDate></item>
   </channel></rss>`,
   // 別ソースの同タイトル記事: 重複排除される
   ainow: `<rss><channel>
@@ -43,11 +46,13 @@ globalThis.fetch = (async (input: any) => {
 async function main() {
   const data = await aggregateNews();
 
-  // キーワードフィルタ: gigazine は AI 関連の2件のみ("email"記事は除外)
+  // キーワードフィルタ: gigazine は AI 関連の記事のみ
+  // ("email" / "AirPods" / "airport" のような AI を含むだけの単語は除外、
+  //  "AIが〜" のように日本語が続くものと "GPT-5.5" は通す)
   const gigazine = data.items.filter((i) => i.sourceId === "gigazine");
   assert.deepEqual(
     gigazine.map((i) => i.title).sort(),
-    ["ChatGPTの新機能が公開", "人工知能と著作権の行方"]
+    ["AIが変える製造業の現場", "ChatGPTの新機能が公開", "GPT-5.5の性能検証", "人工知能と著作権の行方"]
   );
 
   // 重複排除: 同タイトルは新しい方(itmedia)だけ残る

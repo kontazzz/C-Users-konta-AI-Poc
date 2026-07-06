@@ -36,7 +36,7 @@ const atom = `<?xml version="1.0" encoding="utf-8"?>
   <title>Publickey</title>
   <entry>
     <title type="html">Anthropic&#x304C;&#26032;&#12514;&#12487;&#12523;&#12434;&#30330;&#34920;</title>
-    <link rel="alternate" type="text/html" href="https://example.com/atom/1"/>
+    <link rel="alternate" type="text/html" href="https://example.com/atom/1?a=1&amp;b=2"/>
     <link rel="enclosure" href="https://example.com/image.png"/>
     <published>2026-07-01T09:00:00Z</published>
     <updated>2026-07-01T12:00:00Z</updated>
@@ -47,7 +47,8 @@ const atom = `<?xml version="1.0" encoding="utf-8"?>
 const items2 = parseFeed(atom);
 assert.equal(items2.length, 1);
 assert.equal(items2[0].title, "Anthropicが新モデルを発表");
-assert.equal(items2[0].link, "https://example.com/atom/1");
+// href 属性内の &amp; がデコードされてURLが壊れないこと
+assert.equal(items2[0].link, "https://example.com/atom/1?a=1&b=2");
 assert.equal(items2[0].summary, "新モデルの発表内容の概要。");
 assert.equal(items2[0].publishedAt?.toISOString(), "2026-07-01T09:00:00.000Z");
 
