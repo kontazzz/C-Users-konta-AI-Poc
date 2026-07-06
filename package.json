@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "check": "node check-setup.mjs",
     "build": "next build",
     "start": "next start"
   },
