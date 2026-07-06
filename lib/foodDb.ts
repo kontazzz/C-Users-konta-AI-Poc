@@ -1,16 +1,17 @@
-import Database from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 import path from "node:path";
 
 // 既存 dog_food_db(schema.sql / seed_reference.sql)から build_database.py で
 // 生成した SQLite を読み取り専用で利用する。DB構造は一切変更しない。
+// Node.js 標準の node:sqlite を使用(ネイティブビルド不要、Node 22.5 以上)。
 
-let db: Database.Database | null = null;
+let db: DatabaseSync | null = null;
 
-function getDb(): Database.Database {
+function getDb(): DatabaseSync {
   if (!db) {
     const dbPath =
       process.env.FOOD_DB_PATH ?? path.join(process.cwd(), "dog_food_jp.sqlite");
-    db = new Database(dbPath, { readonly: true, fileMustExist: true });
+    db = new DatabaseSync(dbPath, { readOnly: true });
   }
   return db;
 }
@@ -40,13 +41,13 @@ export function searchProducts(query: string, limit = 20): ProductSummary[] {
        ORDER BY brand_name, product_name
        LIMIT :limit`
     )
-    .all({ q: like, limit }) as ProductSummary[];
+    .all({ q: like, limit }) as unknown as ProductSummary[];
 }
 
 export function getProduct(productId: number): ProductSummary | null {
   const row = getDb()
     .prepare(`SELECT * FROM v_in_scope_products WHERE product_id = :product_id`)
-    .get({ product_id: productId }) as ProductSummary | undefined;
+    .get({ product_id: productId }) as unknown as ProductSummary | undefined;
   return row ?? null;
 }
 
@@ -65,7 +66,7 @@ export function getProductIngredients(productId: number): ProductIngredient[] {
        WHERE product_id = :product_id
        ORDER BY ingredient_order`
     )
-    .all({ product_id: productId }) as ProductIngredient[];
+    .all({ product_id: productId }) as unknown as ProductIngredient[];
 }
 
 export interface ProductAllergen {
@@ -83,7 +84,7 @@ export function getProductAllergens(productId: number): ProductAllergen[] {
        JOIN allergen_groups ag ON ag.allergen_group_id = paa.allergen_group_id
        WHERE paa.product_id = :product_id`
     )
-    .all({ product_id: productId }) as ProductAllergen[];
+    .all({ product_id: productId }) as unknown as ProductAllergen[];
 }
 
 // 以下3クエリは similarity_queries.sql の内容をそのまま利用(LIMIT のみ追加)。
@@ -113,7 +114,7 @@ export function getSimilarPriceFoods(productId: number, limit = 5): SimilarFood[
          candidate.product_name
        LIMIT :limit`
     )
-    .all({ product_id: productId, limit }) as SimilarFood[];
+    .all({ product_id: productId, limit }) as unknown as SimilarFood[];
 }
 
 export function getSimilarIngredientFoods(productId: number, limit = 5): SimilarFood[] {
@@ -167,7 +168,7 @@ export function getSimilarIngredientFoods(productId: number, limit = 5): Similar
        ORDER BY ingredient_similarity_score DESC, b.name, p.name
        LIMIT :limit`
     )
-    .all({ product_id: productId, limit }) as SimilarFood[];
+    .all({ product_id: productId, limit }) as unknown as SimilarFood[];
 }
 
 export function getSameManufacturerFoods(productId: number, limit = 5): SimilarFood[] {
@@ -189,5 +190,5 @@ export function getSameManufacturerFoods(productId: number, limit = 5): SimilarF
        ORDER BY b2.name, p2.name
        LIMIT :limit`
     )
-    .all({ product_id: productId, limit }) as SimilarFood[];
+    .all({ product_id: productId, limit }) as unknown as SimilarFood[];
 }
