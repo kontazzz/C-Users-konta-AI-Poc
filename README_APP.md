@@ -27,14 +27,15 @@
    (開発中はダッシュボードの Authentication > Providers > Email で
    「Confirm email」をオフにするとメール確認なしでログインできます)
 
-4. 環境変数を設定
+4. 環境変数を設定(対話式)
 
    ```bash
-   cp .env.example .env.local
+   npm run setup
    ```
 
-   `.env.local` に Supabase の URL と anon キーを設定します。
-   AI診断を使う場合は `AI_API_KEY` も設定します(未設定でも動作します)。
+   画面の指示に従って Supabase の URL と anon キーを入力すると `.env.local` が作成されます。
+   (手動で `cp .env.example .env.local` して編集しても構いません。
+   AI診断を使う場合は `.env.local` の `AI_API_KEY` を設定します。未設定でも動作します)
 
 ## セットアップ診断
 
