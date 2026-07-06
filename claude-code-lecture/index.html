@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code マスター講座</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --bg2: #161a21;
+    --bg3: #1e242e;
+    --border: #2a3140;
+    --text: #e6e9ef;
+    --text-dim: #9aa4b2;
+    --accent: #d97757;
+    --accent-soft: rgba(217, 119, 87, 0.15);
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --blue: #60a5fa;
+    --mono: "SFMono-Regular", "Consolas", "Menlo", "Cascadia Code", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ===== Sidebar ===== */
+  #sidebar {
+    width: 300px;
+    min-width: 300px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    padding: 20px 14px;
+    z-index: 50;
+  }
+  #sidebar .logo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 10px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  #sidebar .logo .mark {
+    width: 38px; height: 38px; border-radius: 9px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-weight: 700; font-size: 18px; color: #fff;
+    flex-shrink: 0;
+  }
+  #sidebar .logo h1 { font-size: 15px; line-height: 1.3; }
+  #sidebar .logo small { color: var(--text-dim); font-size: 11px; font-weight: normal; display: block; }
+
+  #progress-wrap { padding: 4px 10px 14px; }
+  #progress-label { font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between; margin-bottom: 5px; }
+  #progress-bar { height: 7px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+  #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #f0a583); border-radius: 4px; transition: width .4s ease; }
+
+  .nav-group-label { font-size: 10.5px; letter-spacing: .12em; color: var(--text-dim); text-transform: uppercase; padding: 12px 10px 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; border-radius: 8px; cursor: pointer;
+    font-size: 13.5px; color: var(--text-dim);
+    border: none; background: none; width: 100%; text-align: left;
+    font-family: inherit; line-height: 1.45;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .nav-item .num {
+    font-family: var(--mono); font-size: 11px; min-width: 20px;
+    color: var(--text-dim); flex-shrink: 0;
+  }
+  .nav-item.active .num { color: var(--accent); }
+  .nav-item .done { margin-left: auto; color: var(--green); font-size: 12px; flex-shrink: 0; }
+
+  /* ===== Main ===== */
+  #main { flex: 1; min-width: 0; }
+  #content {
+    max-width: 860px; margin: 0 auto;
+    padding: 44px 40px 100px;
+  }
+  .chapter-kicker { color: var(--accent); font-family: var(--mono); font-size: 13px; margin-bottom: 8px; }
+  h2.chapter-title { font-size: 30px; line-height: 1.35; margin-bottom: 10px; letter-spacing: .01em; }
+  .chapter-lead { color: var(--text-dim); font-size: 15.5px; margin-bottom: 34px; }
+
+  h3 { font-size: 20px; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h4 { font-size: 16px; margin: 26px 0 10px; color: var(--text); }
+  p { margin-bottom: 14px; font-size: 15px; }
+  ul, ol { margin: 0 0 16px 24px; font-size: 15px; }
+  li { margin-bottom: 6px; }
+  strong { color: #fff; }
+  a { color: var(--blue); }
+
+  code {
+    font-family: var(--mono); font-size: .88em;
+    background: var(--bg3); border: 1px solid var(--border);
+    padding: 1.5px 6px; border-radius: 5px; color: #f0c674;
+    white-space: nowrap;
+  }
+  pre {
+    background: #0b0d11; border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px; overflow-x: auto;
+    margin: 14px 0 20px; line-height: 1.6;
+  }
+  pre code { background: none; border: none; padding: 0; color: #d5dbe5; font-size: 13px; white-space: pre; }
+  pre .cmt { color: #5c6773; }
+  pre .prompt { color: var(--accent); font-weight: bold; }
+  pre .out { color: #8b95a5; }
+  pre .kw { color: #f0c674; }
+  pre .str { color: #9fd48a; }
+
+  .term-window { background: #0b0d11; border: 1px solid var(--border); border-radius: 10px; margin: 14px 0 20px; overflow: hidden; }
+  .term-bar { background: var(--bg3); padding: 8px 14px; display: flex; gap: 6px; align-items: center; border-bottom: 1px solid var(--border); }
+  .term-bar .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .term-bar .dot:nth-child(1){ background:#ff5f57; } .term-bar .dot:nth-child(2){ background:#febc2e; } .term-bar .dot:nth-child(3){ background:#28c840; }
+  .term-bar span { color: var(--text-dim); font-size: 11.5px; font-family: var(--mono); margin-left: 8px; }
+  .term-window pre { border: none; margin: 0; border-radius: 0; }
+
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg3); font-size: 12.5px; white-space: nowrap; }
+  td:first-child code { white-space: nowrap; }
+  .table-scroll { overflow-x: auto; }
+
+  .callout {
+    border: 1px solid var(--border); border-left: 4px solid var(--blue);
+    background: var(--bg2); border-radius: 8px;
+    padding: 13px 17px; margin: 16px 0 20px; font-size: 14px;
+  }
+  .callout.tip { border-left-color: var(--green); }
+  .callout.warn { border-left-color: var(--yellow); }
+  .callout.pro { border-left-color: var(--accent); }
+  .callout .co-title { font-weight: 700; font-size: 13px; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  .kbd-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 18px; }
+  kbd {
+    font-family: var(--mono); font-size: 12px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-bottom-width: 3px; border-radius: 6px;
+    padding: 3px 9px; color: var(--text);
+  }
+
+  /* ===== Quiz ===== */
+  .quiz-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px 26px; margin-top: 48px; }
+  .quiz-box > h3 { border: none; margin: 0 0 4px; padding: 0; display: flex; align-items: center; gap: 8px; }
+  .quiz-sub { color: var(--text-dim); font-size: 13px; margin-bottom: 20px; }
+  .quiz-q { margin-bottom: 26px; }
+  .quiz-q .q-text { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+  .quiz-q .q-text .q-num { color: var(--accent); font-family: var(--mono); margin-right: 6px; }
+  .choice {
+    display: block; width: 100%; text-align: left;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 8px; cursor: pointer;
+    font-size: 14px; font-family: inherit; line-height: 1.5;
+  }
+  .choice:hover:not(:disabled) { border-color: var(--accent); }
+  .choice:disabled { cursor: default; opacity: .75; }
+  .choice.correct { border-color: var(--green); background: rgba(74, 222, 128, .12); opacity: 1; }
+  .choice.wrong { border-color: var(--red); background: rgba(248, 113, 113, .12); opacity: 1; }
+  .q-explain { display: none; font-size: 13.5px; color: var(--text-dim); background: var(--bg3); border-radius: 8px; padding: 10px 14px; margin-top: 4px; }
+  .q-explain.show { display: block; }
+  .q-explain b { color: var(--green); }
+  .quiz-result { display: none; text-align: center; padding: 14px; border-radius: 10px; font-weight: 700; margin-top: 8px; }
+  .quiz-result.pass { display: block; background: rgba(74,222,128,.12); color: var(--green); border: 1px solid var(--green); }
+  .quiz-result.fail { display: block; background: rgba(251,191,36,.1); color: var(--yellow); border: 1px solid var(--yellow); }
+  .quiz-retry { margin-top: 10px; background: none; border: 1px solid var(--border); color: var(--text-dim); border-radius: 8px; padding: 7px 16px; cursor: pointer; font-family: inherit; font-size: 13px; }
+  .quiz-retry:hover { color: var(--text); border-color: var(--text-dim); }
+
+  /* ===== Pager ===== */
+  .pager { display: flex; justify-content: space-between; gap: 14px; margin-top: 48px; }
+  .pager button {
+    background: var(--bg2); border: 1px solid var(--border); color: var(--text);
+    padding: 13px 20px; border-radius: 10px; cursor: pointer;
+    font-family: inherit; font-size: 14px; max-width: 48%;
+    text-align: left; line-height: 1.4;
+  }
+  .pager button.next { text-align: right; margin-left: auto; }
+  .pager button:hover { border-color: var(--accent); }
+  .pager button small { display: block; color: var(--text-dim); font-size: 11.5px; }
+
+  /* ===== Playground terminal ===== */
+  #play-term {
+    background: #0b0d11; border: 1px solid var(--border); border-radius: 0 0 10px 10px;
+    padding: 16px 18px; font-family: var(--mono); font-size: 13px;
+    height: 420px; overflow-y: auto; line-height: 1.65;
+  }
+  #play-term .line { white-space: pre-wrap; word-break: break-all; }
+  #play-term .u { color: var(--accent); }
+  #play-term .r { color: #d5dbe5; }
+  #play-term .d { color: #8b95a5; }
+  #play-term .g { color: var(--green); }
+  #play-input-row { display: flex; align-items: center; gap: 8px; background: #0b0d11; border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; padding: 10px 18px; }
+  #play-input-row .ps1 { color: var(--accent); font-family: var(--mono); font-size: 13px; }
+  #play-input { flex: 1; background: none; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: 13px; }
+  .play-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0; }
+  .play-chips button { background: var(--bg3); border: 1px solid var(--border); color: var(--text-dim); font-family: var(--mono); font-size: 12px; border-radius: 20px; padding: 4px 12px; cursor: pointer; }
+  .play-chips button:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ===== Cheatsheet ===== */
+  #cheat-search {
+    width: 100%; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; color: var(--text);
+    font-size: 14px; font-family: inherit; margin-bottom: 20px; outline: none;
+  }
+  #cheat-search:focus { border-color: var(--accent); }
+  .cheat-row.hidden { display: none; }
+
+  .badge { display: inline-block; font-size: 11px; font-family: var(--mono); border: 1px solid var(--border); border-radius: 5px; padding: 1px 7px; color: var(--text-dim); margin-left: 6px; vertical-align: middle; }
+
+  #menu-toggle { display: none; }
+  @media (max-width: 900px) {
+    #sidebar { position: fixed; left: -320px; transition: left .25s ease; box-shadow: 4px 0 30px rgba(0,0,0,.5); }
+    #sidebar.open { left: 0; }
+    #content { padding: 70px 20px 80px; }
+    #menu-toggle {
+      display: block; position: fixed; top: 14px; left: 14px; z-index: 60;
+      background: var(--bg2); border: 1px solid var(--border); color: var(--text);
+      border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 16px;
+    }
+    .pager button { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<button id="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+
+<nav id="sidebar">
+  <div class="logo">
+    <div class="mark">&gt;_</div>
+    <h1>Claude Code マスター講座<small>ゼロから使いこなすまで</small></h1>
+  </div>
+  <div id="progress-wrap">
+    <div id="progress-label"><span>学習進捗</span><span id="progress-pct">0%</span></div>
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+  </div>
+  <div id="nav-list"></div>
+</nav>
+
+<div id="main">
+  <div id="content"></div>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   コンテンツ定義
+   ========================================================= */
+const CHAPTERS = [
+
+/* ---------- 1 ---------- */
+{
+  id: "intro",
+  title: "Claude Codeとは & セットアップ",
+  lead: "Claude Codeの正体と、最初の5分で動かすまでの手順を押さえます。",
+  body: `
+<h3>Claude Codeとは</h3>
+<p><strong>Claude Code</strong>は、Anthropicが提供する「ターミナルの中で動くAIコーディングエージェント」です。チャットボットと違い、単に答えを返すだけではなく、<strong>自分でファイルを読み・編集し・コマンドを実行し・テストを回し・コミットまで行う</strong>エージェントとして働きます。</p>
+<ul>
+  <li><strong>エージェント型</strong> — 「バグを直して」と頼めば、原因調査 → 修正 → テスト実行まで自律的に進めます。</li>
+  <li><strong>ターミナル常駐</strong> — 普段のシェル・エディタ・gitワークフローにそのまま溶け込みます。VS CodeやJetBrainsの拡張、デスクトップアプリ、Web版(claude.ai/code)もあります。</li>
+  <li><strong>コードベース理解</strong> — プロジェクト全体を検索・把握した上で、既存の書き方に合わせた変更を提案します。</li>
+  <li><strong>拡張可能</strong> — スラッシュコマンド、スキル、hooks、MCP、サブエージェントで自分専用に育てられます。</li>
+</ul>
+
+<h3>インストール</h3>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>terminal</span></div>
+<pre><code><span class="cmt"># npm でインストール(Node.js 18+ が必要)</span>
+<span class="prompt">$</span> npm install -g @anthropic-ai/claude-code
+
+<span class="cmt"># macOS / Linux はネイティブインストーラも利用可能</span>
+<span class="prompt">$</span> curl -fsSL https://claude.ai/install.sh | bash
+
+<span class="cmt"># バージョン確認・アップデート</span>
+<span class="prompt">$</span> claude --version
+<span class="prompt">$</span> claude update</code></pre></div>
+
+<h3>初回起動とログイン</h3>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>terminal</span></div>
+<pre><code><span class="cmt"># プロジェクトのルートで起動するのが基本</span>
+<span class="prompt">$</span> cd my-project
+<span class="prompt">$</span> claude</code></pre></div>
+<p>初回はブラウザが開き、Claudeアカウント(Pro / Maxプラン)または Claude Console(API従量課金)でログインします。ログイン方法は後から <code>/login</code> で切り替えられます。</p>
+
+<div class="callout tip"><div class="co-title">💡 TIP: 起動場所が大事</div>
+<p>Claude Codeは<strong>起動したディレクトリ以下</strong>を作業対象として認識します。リポジトリのルートで起動しましょう。別のディレクトリを追加したいときはセッション中に <code>/add-dir</code> が使えます。</p></div>
+
+<h3>最初にやるべきこと: <code>/init</code></h3>
+<p>プロジェクトで最初にClaude Codeを使うときは、<code>/init</code> を実行しましょう。コードベースをスキャンして、ビルド方法・アーキテクチャ・規約をまとめた <code>CLAUDE.md</code>(プロジェクトの説明書)を自動生成してくれます。これが以後のすべての回答の精度を底上げします。</p>
+
+<h3>動作確認をしてみよう</h3>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> このプロジェクトの構成を説明して
+
+<span class="out">⏺ プロジェクトを調べます…
+  (Globでファイル一覧 → READMEとpackage.jsonをRead)
+  このプロジェクトは Next.js 15 + TypeScript のアプリで…</span></code></pre></div>
+<p>このように、質問するだけでClaudeが必要なファイルを自分で探して読み、回答します。<strong>「何をどう調べるか」を人間が指示しなくてよい</strong>のがエージェントの強みです。</p>
+`,
+  quiz: [
+    { q: "Claude Codeの特徴として最も正しいものは?",
+      c: ["コード片を提案するだけの補完ツールである", "ファイル編集・コマンド実行・テストまで自律的に行うエージェントである", "ブラウザ専用のチャットボットである", "gitの代替ツールである"],
+      a: 1, e: "Claude Codeは提案だけでなく、実際にファイルを編集しコマンドを実行して作業を完遂するエージェントです。" },
+    { q: "新しいプロジェクトで最初に実行すると良いコマンドは?",
+      c: ["/clear", "/init", "/cost", "/logout"],
+      a: 1, e: "/init はコードベースを解析して CLAUDE.md を自動生成し、以後の回答精度を高めます。" },
+    { q: "Claude Codeを起動する場所として推奨されるのは?",
+      c: ["ホームディレクトリ", "どこでも同じ", "対象プロジェクトのルートディレクトリ", "/tmp"],
+      a: 2, e: "起動ディレクトリ以下が作業対象になるため、プロジェクトルートでの起動が基本です。追加は /add-dir で可能です。" }
+  ]
+},
+
+/* ---------- 2 ---------- */
+{
+  id: "basics",
+  title: "基本操作 — 対話・編集・許可",
+  lead: "日々の作業の8割を占める「頼む → 確認する → 承認する」の基本ループを身につけます。",
+  body: `
+<h3>基本の対話ループ</h3>
+<p>Claude Codeの使い方はシンプルで、<strong>日本語(自然言語)でやってほしいことを書くだけ</strong>です。</p>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> ログイン画面にパスワード表示切替ボタンを追加して
+
+<span class="out">⏺ LoginForm.tsx を読み込み…
+⏺ Edit(app/components/LoginForm.tsx)
+  ⎿ 変更内容のdiffが表示される</span>
+
+<span class="out">  Do you want to make this edit? ❯ Yes / Yes, allow all edits / No</span></code></pre></div>
+<p>Claudeがファイルを編集したりコマンドを実行しようとすると、<strong>diffや実行内容を見せて許可を求めてきます</strong>。内容を確認して承認する、これが基本ループです。</p>
+
+<h3>許可(パーミッション)の3つのモード</h3>
+<p><kbd>Shift</kbd>+<kbd>Tab</kbd> で入力欄下のモードが切り替わります。</p>
+<div class="table-scroll"><table>
+<tr><th>モード</th><th>動作</th><th>使いどころ</th></tr>
+<tr><td><strong>通常モード</strong></td><td>編集・コマンド実行のたびに確認を求める</td><td>初めての操作、慎重に進めたいとき</td></tr>
+<tr><td><strong>auto-accept</strong> <code>⏵⏵</code></td><td>ファイル編集を自動承認</td><td>信頼できる定型作業を任せるとき</td></tr>
+<tr><td><strong>plan mode</strong> <code>⏸</code></td><td>ファイルを一切変更せず、調査と計画だけ行う</td><td>大きな変更の前に方針をレビューしたいとき</td></tr>
+</table></div>
+
+<div class="callout warn"><div class="co-title">⚠️ 承認は「読む」こと</div>
+<p>承認ダイアログはただのEnter連打ポイントではありません。<strong>diffを読む習慣</strong>が品質と安全を守ります。特に <code>rm</code> や <code>git push</code> などの取り消しにくい操作は必ず内容を確認しましょう。</p></div>
+
+<h3>ファイルの指定 — <code>@</code> メンション</h3>
+<p><code>@</code> を入力するとファイルパスの補完が始まります。対象ファイルが分かっているときは明示した方が速くて正確です。</p>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> @src/utils/date.ts のformatDate関数にタイムゾーン対応を追加して</code></pre></div>
+
+<h3>シェルコマンドの直接実行 — <code>!</code></h3>
+<p>行頭に <code>!</code> を付けると、Claudeを介さず自分でシェルコマンドを実行できます。実行結果は会話のコンテキストに追加されるので、「この結果を見て」と続けられます。</p>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> !npm test
+<span class="out">  (テスト結果が表示され、コンテキストに入る)</span>
+<span class="prompt">&gt;</span> 失敗しているテストを直して</code></pre></div>
+
+<h3>途中で止める・軌道修正する</h3>
+<ul>
+  <li><kbd>Esc</kbd> — Claudeの作業を中断。「ちょっと待って、方針を変えたい」ときに躊躇なく使う。</li>
+  <li><kbd>Esc</kbd><kbd>Esc</kbd>(2回) — 過去のメッセージに戻って会話をやり直す(巻き戻し)。</li>
+  <li>中断してから追加の指示を出せば、Claudeは文脈を保ったまま軌道修正します。</li>
+</ul>
+<div class="callout pro"><div class="co-title">🔥 上級者の共通点</div>
+<p>上手な人ほど<strong>Escを頻繁に押します</strong>。違う方向に進み始めたら最後まで待たず、すぐ止めて指示し直す方が速く終わります。</p></div>
+
+<h3>会話の管理</h3>
+<ul>
+  <li><code>/clear</code> — コンテキストを完全リセット。<strong>別のタスクに移るたびに実行</strong>するのがベストプラクティス。無関係な履歴は精度もコストも悪化させます。</li>
+  <li><code>/compact</code> — 会話を要約して圧縮。長い作業を続けたいがコンテキストが膨らんだときに。</li>
+  <li><code>claude -c</code> — 直前のセッションを再開(continue)。<code>claude -r</code> で過去セッション一覧から選んで再開(resume)。</li>
+</ul>
+`,
+  quiz: [
+    { q: "パーミッションモードを切り替えるキーは?",
+      c: ["Ctrl+P", "Shift+Tab", "Alt+M", "F2"],
+      a: 1, e: "Shift+Tab で 通常 → auto-accept → plan mode を循環します。" },
+    { q: "「ファイルを一切変更せず調査と計画だけさせたい」ときのモードは?",
+      c: ["auto-acceptモード", "通常モード", "plan mode", "vimモード"],
+      a: 2, e: "plan modeは読み取り専用で、調査と実装計画の提示だけを行います。" },
+    { q: "別のタスクに移るときに推奨される操作は?",
+      c: ["/clear でコンテキストをリセットする", "そのまま続ける", "Claude Codeを再インストールする", "/logout する"],
+      a: 0, e: "無関係な履歴はノイズになるため、タスクの切れ目で /clear するのが定石です。" },
+    { q: "行頭に「!」を付けて入力すると何が起きる?",
+      c: ["Claudeが強い口調になる", "自分でシェルコマンドを実行し、結果がコンテキストに入る", "直前の操作を取り消す", "通知が飛ぶ"],
+      a: 1, e: "! はbashモード。実行結果が会話に取り込まれるので、その結果を踏まえた指示ができます。" }
+  ]
+},
+
+/* ---------- 3 ---------- */
+{
+  id: "slash",
+  title: "スラッシュコマンド完全ガイド",
+  lead: "セッションを制御する組み込みコマンド。全部覚える必要はなく、「あることを知っている」だけで十分強力です。",
+  body: `
+<h3>まず覚える7つ</h3>
+<div class="table-scroll"><table>
+<tr><th>コマンド</th><th>効果</th></tr>
+<tr><td><code>/help</code></td><td>ヘルプと利用可能コマンドの一覧を表示</td></tr>
+<tr><td><code>/init</code></td><td>コードベースを解析して CLAUDE.md を生成</td></tr>
+<tr><td><code>/clear</code></td><td>会話履歴とコンテキストを完全リセット</td></tr>
+<tr><td><code>/compact</code></td><td>会話を要約して圧縮(<code>/compact 修正内容を中心に残して</code>のように指示も可)</td></tr>
+<tr><td><code>/model</code></td><td>使用モデルの確認・切り替え(Opus / Sonnet / Haiku など)</td></tr>
+<tr><td><code>/memory</code></td><td>CLAUDE.md(メモリファイル)を開いて編集</td></tr>
+<tr><td><code>/resume</code></td><td>過去のセッション一覧から選んで再開</td></tr>
+</table></div>
+
+<h3>状態を確認する</h3>
+<div class="table-scroll"><table>
+<tr><th>コマンド</th><th>効果</th></tr>
+<tr><td><code>/cost</code></td><td>現在のセッションのトークン使用量・コストを表示</td></tr>
+<tr><td><code>/context</code></td><td>コンテキストウィンドウの使用状況を可視化</td></tr>
+<tr><td><code>/status</code></td><td>アカウント・モデル・接続状態などを表示</td></tr>
+<tr><td><code>/doctor</code></td><td>インストール状態の診断とトラブルシュート</td></tr>
+<tr><td><code>/todos</code></td><td>Claudeが管理中のTODOリストを表示</td></tr>
+</table></div>
+
+<h3>設定・カスタマイズ系</h3>
+<div class="table-scroll"><table>
+<tr><th>コマンド</th><th>効果</th></tr>
+<tr><td><code>/config</code></td><td>テーマ・通知などの設定画面を開く</td></tr>
+<tr><td><code>/permissions</code></td><td>ツールの許可・拒否ルールを管理</td></tr>
+<tr><td><code>/agents</code></td><td>サブエージェントの作成・管理</td></tr>
+<tr><td><code>/hooks</code></td><td>hooks(自動実行フック)の設定</td></tr>
+<tr><td><code>/mcp</code></td><td>MCPサーバーの接続状態確認・管理</td></tr>
+<tr><td><code>/statusline</code></td><td>ステータスライン(画面下部の表示)をカスタマイズ</td></tr>
+<tr><td><code>/vim</code></td><td>入力欄をVimキーバインドに切り替え</td></tr>
+<tr><td><code>/terminal-setup</code></td><td>Shift+Enterでの改行などターミナル統合を設定</td></tr>
+<tr><td><code>/output-style</code></td><td>応答スタイルの変更(説明多め・簡潔など)</td></tr>
+</table></div>
+
+<h3>セッション・アカウント系</h3>
+<div class="table-scroll"><table>
+<tr><th>コマンド</th><th>効果</th></tr>
+<tr><td><code>/rewind</code></td><td>チェックポイントに巻き戻し(コード変更や会話を戻せる)</td></tr>
+<tr><td><code>/export</code></td><td>会話をファイルやクリップボードにエクスポート</td></tr>
+<tr><td><code>/add-dir</code></td><td>作業対象ディレクトリを追加</td></tr>
+<tr><td><code>/review</code></td><td>コードレビューを依頼</td></tr>
+<tr><td><code>/pr-comments</code></td><td>Pull Requestのコメントを取得して表示</td></tr>
+<tr><td><code>/login</code> / <code>/logout</code></td><td>アカウントの切り替え・ログアウト</td></tr>
+<tr><td><code>/bug</code></td><td>Anthropicへフィードバックを送信</td></tr>
+</table></div>
+
+<div class="callout tip"><div class="co-title">💡 TIP: 「/」を押すだけ</div>
+<p>入力欄で <code>/</code> を打つと候補が絞り込み表示されます。うろ覚えでも <code>/</code> → 数文字で見つかるので、正確な綴りを暗記する必要はありません。カスタムコマンド(後の章)もここに並びます。</p></div>
+
+<div class="callout pro"><div class="co-title">🔥 /rewind は安全網</div>
+<p>Claude Codeは作業の節目でチェックポイントを取っています。「さっきの変更ぜんぶ戻したい」というとき、<code>/rewind</code>(または<kbd>Esc</kbd>を2回)でコードと会話を過去の時点に戻せます。gitにコミットしていなくても戻れる、強力な安全網です。</p></div>
+`,
+  quiz: [
+    { q: "現在のセッションのトークン使用量を確認するコマンドは?",
+      c: ["/tokens", "/cost", "/usage", "/billing"],
+      a: 1, e: "/cost で現在のセッションの使用量・コストを確認できます。" },
+    { q: "コード変更や会話をチェックポイントまで巻き戻すコマンドは?",
+      c: ["/undo", "/rewind", "/reset", "/back"],
+      a: 1, e: "/rewind(またはEsc 2回)でチェックポイントに巻き戻せます。gitコミット前でも戻れます。" },
+    { q: "「会話が長くなったが作業は続けたい」ときに最適なのは?",
+      c: ["/clear", "/compact", "/logout", "/doctor"],
+      a: 1, e: "/compact は履歴を要約して圧縮するので、文脈を保ったままコンテキストを節約できます。完全に別タスクなら /clear。" }
+  ]
+},
+
+/* ---------- 4 ---------- */
+{
+  id: "keys",
+  title: "キーボードショートカット & 入力術",
+  lead: "指が覚えれば作業速度が倍になる、キー操作のすべて。",
+  body: `
+<h3>必須ショートカット</h3>
+<div class="table-scroll"><table>
+<tr><th>キー</th><th>動作</th></tr>
+<tr><td><kbd>Esc</kbd></td><td>Claudeの生成・作業を中断</td></tr>
+<tr><td><kbd>Esc</kbd> <kbd>Esc</kbd></td><td>過去のメッセージに戻る / 巻き戻しメニュー</td></tr>
+<tr><td><kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>パーミッションモード切替(通常 → auto-accept → plan)</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>入力キャンセル / 2回で終了</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Claude Codeを終了</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>R</kbd></td><td>フル出力(トランスクリプト)の表示</td></tr>
+<tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>入力履歴をさかのぼる(過去セッション分も含む)</td></tr>
+<tr><td><kbd>Tab</kbd></td><td>ファイルパス・コマンドの補完</td></tr>
+</table></div>
+
+<h3>複数行入力のコツ</h3>
+<p>長い指示は複数行で書いた方が伝わります。改行方法は環境によっていくつかあります。</p>
+<ul>
+  <li><code>\\</code> + <kbd>Enter</kbd> — どの環境でも動く基本形</li>
+  <li><kbd>Shift</kbd>+<kbd>Enter</kbd> — <code>/terminal-setup</code> を実行すると多くのターミナルで有効化</li>
+  <li><kbd>Option</kbd>+<kbd>Enter</kbd>(macOS)</li>
+</ul>
+
+<h3>先頭1文字で意味が変わる</h3>
+<div class="table-scroll"><table>
+<tr><th>プレフィックス</th><th>意味</th></tr>
+<tr><td><code>/</code></td><td>スラッシュコマンド(組み込み・カスタム)</td></tr>
+<tr><td><code>@</code></td><td>ファイル・ディレクトリをメンション(補完付き)</td></tr>
+<tr><td><code>!</code></td><td>bashモード — シェルコマンドを直接実行し結果をコンテキストへ</td></tr>
+<tr><td><code>#</code></td><td>メモリ追加 — 入力内容をCLAUDE.mdに記憶させる</td></tr>
+</table></div>
+
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="cmt"># 「#」で始めると、その知見をメモリに保存できる</span>
+<span class="prompt">&gt;</span> # テストは npm test ではなく make test で実行すること
+
+<span class="out">  ⎿ どのメモリに保存しますか? ❯ プロジェクト (CLAUDE.md) / ユーザー (~/.claude/CLAUDE.md)</span></code></pre></div>
+
+<h3>画像を渡す</h3>
+<p>UIのスクリーンショットやエラー画面を見せると、テキストで説明するより圧倒的に速く伝わります。</p>
+<ul>
+  <li>ターミナルに画像を<strong>ドラッグ&ドロップ</strong></li>
+  <li>クリップボードの画像を <kbd>Ctrl</kbd>+<kbd>V</kbd> で貼り付け(macOSでも<strong>Cmd+VではなくCtrl+V</strong>)</li>
+  <li>画像ファイルのパスを <code>@</code> で指定</li>
+</ul>
+<div class="callout tip"><div class="co-title">💡 スクショ駆動開発</div>
+<p>「このデザインモックの通りに実装して」+ 画像 → 実装 → 「実行結果のスクショがこれ。モックとの差分を直して」+ 画像。視覚的な作業はこの反復が最強です。</p></div>
+
+<h3>Vim派のあなたへ</h3>
+<p><code>/vim</code> で入力欄がVimキーバインドになります(ノーマル/インサートモード、<code>h j k l</code>、<code>dd</code>、<code>cw</code> など)。<code>/config</code> から恒久設定も可能です。</p>
+`,
+  quiz: [
+    { q: "Claudeの作業を途中で止めるキーは?",
+      c: ["Ctrl+Z", "Esc", "Ctrl+Q", "Delete"],
+      a: 1, e: "Escで即座に中断できます。止めてから軌道修正するのが上級者の使い方です。" },
+    { q: "「# テストはmake testで実行」と入力すると何が起きる?",
+      c: ["コメントとして無視される", "シェルでコメントが実行される", "CLAUDE.md(メモリ)への保存が提案される", "チャンネルが変わる"],
+      a: 2, e: "#プレフィックスはメモリ追加のショートカット。保存先(プロジェクト/ユーザー)を選べます。" },
+    { q: "macOSのターミナルでクリップボードの画像を貼り付けるキーは?",
+      c: ["Cmd+V", "Ctrl+V", "Option+V", "画像は貼れない"],
+      a: 1, e: "ターミナルの制約上、macOSでもCtrl+Vを使います。ドラッグ&ドロップも可能です。" }
+  ]
+},
+
+/* ---------- 5 ---------- */
+{
+  id: "memory",
+  title: "CLAUDE.md — プロジェクトの記憶",
+  lead: "Claude Codeの精度を最も左右する仕組み。「毎回同じ注意をしている」ならこの章が解決します。",
+  body: `
+<h3>CLAUDE.mdとは</h3>
+<p><code>CLAUDE.md</code> は、セッション開始時に<strong>自動でコンテキストに読み込まれる</strong>Markdownファイルです。ビルドコマンド、コーディング規約、アーキテクチャの要点、やってはいけないこと──毎回伝えたい情報をここに書いておけば、二度と繰り返す必要がありません。</p>
+
+<h3>3つの配置場所と優先順位</h3>
+<div class="table-scroll"><table>
+<tr><th>場所</th><th>スコープ</th><th>用途</th></tr>
+<tr><td><code>~/.claude/CLAUDE.md</code></td><td>ユーザー全体</td><td>全プロジェクト共通の個人的な好み(言語、スタイル)</td></tr>
+<tr><td><code>./CLAUDE.md</code></td><td>プロジェクト</td><td>チームで共有する規約・コマンド(<strong>gitにコミットする</strong>)</td></tr>
+<tr><td><code>./CLAUDE.local.md</code></td><td>プロジェクト(個人)</td><td>自分だけのメモ(.gitignore対象)</td></tr>
+</table></div>
+<p>サブディレクトリに置いた <code>CLAUDE.md</code> は、そのディレクトリのファイルを扱うときに読み込まれます。モノレポでパッケージごとの規約を書くのに便利です。</p>
+
+<h3>良いCLAUDE.mdの例</h3>
+<pre><code><span class="kw"># プロジェクト概要</span>
+Next.js 15 + TypeScript + Supabase のWebアプリ。
+
+<span class="kw"># よく使うコマンド</span>
+- ビルド: npm run build
+- テスト: npm test -- --watch=false
+- 型チェック: npx tsc --noEmit  <span class="cmt">← コード変更後は必ず実行</span>
+
+<span class="kw"># コーディング規約</span>
+- コンポーネントは関数コンポーネント + hooks のみ
+- 状態管理はZustand。Reduxは使わない
+- エラーメッセージはユーザー向けは日本語、ログは英語
+
+<span class="kw"># 注意</span>
+- src/legacy/ 以下は触らない(廃止予定)
+- DBマイグレーションは必ず supabase/migrations/ に追加</code></pre>
+
+<div class="callout warn"><div class="co-title">⚠️ 書きすぎ注意</div>
+<p>CLAUDE.mdは<strong>毎回トークンを消費します</strong>。長大な仕様書ではなく「毎回必要な要点」だけを簡潔に。詳細ドキュメントは別ファイルにして、必要なときに参照させる方が効率的です。</p></div>
+
+<h3>インポート機能</h3>
+<p><code>@パス</code> の記法で他のファイルを取り込めます。</p>
+<pre><code><span class="kw"># CLAUDE.md</span>
+コーディング規約は @docs/style-guide.md を参照。
+個人設定: @~/.claude/my-prefs.md</code></pre>
+
+<h3>育て方 — <code>#</code> と <code>/memory</code></h3>
+<ul>
+  <li>作業中に「これ毎回言ってるな」と思ったら、その場で <code>#</code> を付けて入力 → メモリに保存。</li>
+  <li><code>/memory</code> でCLAUDE.mdをエディタで開いて直接編集・整理。</li>
+  <li>Claudeに「CLAUDE.mdに追記しておいて」と頼むのも有効。</li>
+</ul>
+<div class="callout pro"><div class="co-title">🔥 CLAUDE.mdはプロンプトである</div>
+<p>効きが悪いと感じたら書き方を磨きましょう。「重要」「必ず」などの強調を付ける、箇条書きで簡潔にする、具体的なコマンドを書く──CLAUDE.mdの改善はチーム全員のClaude Codeを一斉に強化します。</p></div>
+`,
+  quiz: [
+    { q: "チームで共有すべきプロジェクト規約を書く場所は?",
+      c: ["~/.claude/CLAUDE.md", "./CLAUDE.md(リポジトリにコミット)", "./CLAUDE.local.md", "/etc/claude/CLAUDE.md"],
+      a: 1, e: "プロジェクトルートのCLAUDE.mdをgitにコミットすれば、チーム全員のClaude Codeが同じ知識を持ちます。" },
+    { q: "CLAUDE.mdの書き方として推奨されるのは?",
+      c: ["仕様書を全文貼り付ける", "毎回必要な要点だけを簡潔に書く", "空にしておく", "英語以外禁止"],
+      a: 1, e: "CLAUDE.mdは毎セッションでトークンを消費します。要点を簡潔に、詳細は@インポートや別ファイル参照で。" },
+    { q: "CLAUDE.mdから他のファイルを取り込む記法は?",
+      c: ["#include path", "@パス", "!import path", "{{path}}"],
+      a: 1, e: "「@docs/style-guide.md を参照」のように@記法でインポートできます。" }
+  ]
+},
+
+/* ---------- 6 ---------- */
+{
+  id: "settings",
+  title: "設定とパーミッション管理",
+  lead: "「毎回同じ許可を求められて面倒」を安全に解決する、settings.jsonの世界。",
+  body: `
+<h3>設定ファイルの階層</h3>
+<div class="table-scroll"><table>
+<tr><th>ファイル</th><th>スコープ</th><th>共有</th></tr>
+<tr><td><code>~/.claude/settings.json</code></td><td>ユーザー全体</td><td>自分のみ</td></tr>
+<tr><td><code>.claude/settings.json</code></td><td>プロジェクト</td><td>チーム(gitにコミット)</td></tr>
+<tr><td><code>.claude/settings.local.json</code></td><td>プロジェクト(個人)</td><td>自分のみ(git対象外)</td></tr>
+</table></div>
+
+<h3>パーミッションルール</h3>
+<p>ツール実行の許可・拒否をルールで定義できます。<code>/permissions</code> で対話的に管理するか、settings.jsonを直接編集します。</p>
+<pre><code>{
+  <span class="str">"permissions"</span>: {
+    <span class="str">"allow"</span>: [
+      <span class="str">"Bash(npm test:*)"</span>,      <span class="cmt">// npm test〜 は常に許可</span>
+      <span class="str">"Bash(npm run lint)"</span>,
+      <span class="str">"Read(~/.zshrc)"</span>
+    ],
+    <span class="str">"deny"</span>: [
+      <span class="str">"Bash(rm -rf:*)"</span>,        <span class="cmt">// 危険コマンドを常に拒否</span>
+      <span class="str">"Read(.env)"</span>,            <span class="cmt">// 機密ファイルを読ませない</span>
+      <span class="str">"WebFetch"</span>
+    ]
+  }
+}</code></pre>
+<ul>
+  <li>ルールは <code>ツール名(パターン)</code> の形式。<code>:*</code> は前方一致のワイルドカード。</li>
+  <li><code>deny</code> は <code>allow</code> より優先されます。</li>
+  <li>承認ダイアログで「Yes, don't ask again」系の選択をすると、ルールとして保存されます。</li>
+</ul>
+
+<div class="callout tip"><div class="co-title">💡 育てる順番</div>
+<p>最初は通常モードで使い、「これは毎回許可してるな」というコマンドが見えてきたら allow に追加。<strong>実績のある操作から順に自動化する</strong>のが安全な育て方です。</p></div>
+
+<h3>危険な近道: <code>--dangerously-skip-permissions</code></h3>
+<p>すべての確認をスキップするフラグです。便利ですが、その名の通り危険です。</p>
+<div class="callout warn"><div class="co-title">⚠️ 使ってよい条件</div>
+<p>コンテナやVMなど<strong>隔離された環境</strong>で、<strong>失っても困らない作業ディレクトリ</strong>に限定しましょう。自分のメイン環境で常用するのは事故のもとです。まずはパーミッションルールとauto-acceptモードで十分足りるはずです。</p></div>
+
+<h3>その他の主要設定</h3>
+<pre><code>{
+  <span class="str">"model"</span>: <span class="str">"claude-opus-4-8"</span>,        <span class="cmt">// 既定モデル</span>
+  <span class="str">"env"</span>: {                            <span class="cmt">// セッションに渡す環境変数</span>
+    <span class="str">"NODE_ENV"</span>: <span class="str">"development"</span>
+  },
+  <span class="str">"hooks"</span>: { ... }                    <span class="cmt">// 後の章で解説</span>
+}</code></pre>
+<p>環境変数でも制御できます: <code>ANTHROPIC_MODEL</code>、<code>MAX_THINKING_TOKENS</code>、<code>HTTPS_PROXY</code> など。</p>
+
+<h3>モデルの使い分け</h3>
+<div class="table-scroll"><table>
+<tr><th>モデル</th><th>特徴</th><th>向く作業</th></tr>
+<tr><td><strong>Opus</strong></td><td>最高性能</td><td>設計、難しいデバッグ、大規模リファクタ</td></tr>
+<tr><td><strong>Sonnet</strong></td><td>速度と性能のバランス</td><td>日常のコーディング全般</td></tr>
+<tr><td><strong>Haiku</strong></td><td>高速・低コスト</td><td>単純作業、定型変換、大量処理</td></tr>
+</table></div>
+<p>セッション中は <code>/model</code> でいつでも切り替えられます。</p>
+`,
+  quiz: [
+    { q: "「npm test〜で始まるコマンドを常に許可」する設定は?",
+      c: ["\"allow\": [\"Bash(npm test:*)\"]", "\"trust\": [\"npm test\"]", "\"yes\": [\"npm*\"]", "settings.jsonでは不可能"],
+      a: 0, e: "permissions.allow に Bash(npm test:*) を追加します。:*が前方一致ワイルドカードです。" },
+    { q: "allowとdenyの両方にマッチした場合どうなる?",
+      c: ["allowが勝つ", "denyが勝つ", "エラーになる", "ランダム"],
+      a: 1, e: "denyルールが常に優先されます。機密ファイルのReadをdenyしておけば確実にブロックされます。" },
+    { q: "--dangerously-skip-permissions の適切な使い方は?",
+      c: ["常に付けて起動する", "隔離されたコンテナ/VM内の失ってよい環境で使う", "本番サーバーで使う", "チーム全員に強制する"],
+      a: 1, e: "すべての確認が消えるため、隔離環境限定が原則です。通常はパーミッションルールで十分です。" }
+  ]
+},
+
+/* ---------- 7 ---------- */
+{
+  id: "think",
+  title: "プランモードと拡張思考",
+  lead: "「いきなり書かせない」— 大きなタスクの成功率を劇的に上げる2つの仕組み。",
+  body: `
+<h3>なぜ「計画」が必要か</h3>
+<p>小さな修正なら直接頼めば十分です。しかし大きな機能追加やリファクタリングでいきなり書かせると、方向違いのコードが大量に生まれがちです。<strong>先に計画を出させてレビューする</strong>だけで、成果物の質が大きく変わります。</p>
+
+<h3>プランモード(plan mode)</h3>
+<p><kbd>Shift</kbd>+<kbd>Tab</kbd> を2回押すと入る読み取り専用モードです。</p>
+<ul>
+  <li>Claudeはファイルの読み取り・検索だけを行い、<strong>一切変更しません</strong>。</li>
+  <li>調査に基づいた実装計画を提示し、承認すると通常モードに戻って実装開始。</li>
+  <li>計画が気に入らなければその場で修正指示 → 練り直し。</li>
+</ul>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude — plan mode ⏸</span></div>
+<pre><code><span class="prompt">&gt;</span> 認証をセッション方式からJWTに移行したい。まず計画を立てて
+
+<span class="out">⏺ 調査中… (auth/ 以下を読み込み)
+  ## 移行計画
+  1. lib/jwt.ts を新規作成(発行・検証)
+  2. middleware.ts の認証チェックを差し替え
+  3. 既存セッションとの互換レイヤーを1リリース分維持
+  4. テスト: auth.test.ts を更新
+  この計画で進めますか?</span></code></pre></div>
+
+<h3>拡張思考(Extended Thinking)</h3>
+<p>難しい問題では、Claudeに「考える時間」を与えられます。プロンプトに<strong>思考を促す言葉</strong>を入れるだけです。</p>
+<div class="table-scroll"><table>
+<tr><th>キーワード</th><th>思考量</th></tr>
+<tr><td><code>think</code></td><td>標準の拡張思考</td></tr>
+<tr><td><code>think hard</code> / <code>megathink</code></td><td>より深く</td></tr>
+<tr><td><code>ultrathink</code></td><td>最大の思考予算</td></tr>
+</table></div>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> この間欠的に失敗するテストの原因を ultrathink で徹底的に分析して
+
+<span class="out">✻ Thinking…
+  (競合状態の可能性を検討。beforeEachでのDB初期化と
+   並列実行の組み合わせを調査…)</span></code></pre></div>
+<p>日本語プロンプトでも「深く考えて」「じっくり検討して」といった表現で思考が促されますが、確実に効かせたいなら英語キーワードを混ぜるのが手堅い方法です。思考中の内容はイタリック表示され、途中でも<kbd>Esc</kbd>で止められます。</p>
+
+<div class="callout tip"><div class="co-title">💡 使い分けの目安</div>
+<ul style="margin-bottom:0">
+  <li>タイポ修正・小さな変更 → そのまま頼む</li>
+  <li>複数ファイルにまたがる機能追加 → <strong>plan mode</strong></li>
+  <li>設計判断・難解なバグ・アーキテクチャ検討 → <strong>plan mode + think hard/ultrathink</strong></li>
+</ul></div>
+
+<h3>王道ワークフロー「調査 → 計画 → 実装 → コミット」</h3>
+<ol>
+  <li><strong>調査</strong>: 「まだコードは書かず、関連ファイルを調べて現状を説明して」</li>
+  <li><strong>計画</strong>: plan modeで実装計画を出させ、人間がレビュー</li>
+  <li><strong>実装</strong>: 承認後に実装。テストも書かせ、実行して検証させる</li>
+  <li><strong>コミット</strong>: 「変更をコミットして」— 差分から適切なメッセージを生成</li>
+</ol>
+<p>Anthropic社内でも推奨される、最も汎用的な進め方です。</p>
+`,
+  quiz: [
+    { q: "plan modeに入る操作は?",
+      c: ["Shift+Tabを2回", "/plan と入力", "Ctrl+P", "--plan フラグのみ"],
+      a: 0, e: "Shift+Tabでモードが循環し、2回でplan mode(読み取り専用)に入ります。" },
+    { q: "最大の思考予算を与えるキーワードは?",
+      c: ["think", "think hard", "ultrathink", "maxthink"],
+      a: 2, e: "think < think hard < ultrathink の順に思考予算が増えます。" },
+    { q: "大きな機能追加を頼むときの王道の順序は?",
+      c: ["実装 → 調査 → 計画", "調査 → 計画 → 実装 → コミット", "コミット → 実装", "計画だけで終わる"],
+      a: 1, e: "「調査→計画→実装→コミット」が推奨ワークフロー。計画段階での人間レビューが品質を決めます。" }
+  ]
+},
+
+/* ---------- 8 ---------- */
+{
+  id: "git",
+  title: "Gitワークフロー統合",
+  lead: "コミットメッセージ、PR作成、コンフリクト解消、リポジトリ考古学 — git作業の大半は任せられます。",
+  body: `
+<h3>コミットを任せる</h3>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> 変更をコミットして
+
+<span class="out">⏺ Bash(git status && git diff)
+⏺ Bash(git log --oneline -5)   <span class="cmt"># 既存のメッセージスタイルを確認</span>
+⏺ Bash(git add ... && git commit -m "fix: タイムゾーン起因の日付ずれを修正")</span></code></pre></div>
+<p>Claudeは差分と過去のコミットスタイルを見て、<strong>プロジェクトの流儀に合ったメッセージ</strong>を書きます。「Conventional Commitsで」「日本語で」などの規約はCLAUDE.mdに書いておきましょう。</p>
+
+<h3>Pull Request作成</h3>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> このブランチの変更でPRを作って
+
+<span class="out">⏺ Bash(git push -u origin feature/jwt-auth)
+⏺ Bash(gh pr create --title "..." --body "...")
+  ⎿ https://github.com/you/repo/pull/123</span></code></pre></div>
+<p>GitHub CLI(<code>gh</code>)がインストール済みなら、PR作成・レビューコメント取得・Issue操作までターミナルから完結します。</p>
+
+<h3>日常で頼めること</h3>
+<ul>
+  <li><strong>履歴調査</strong>: 「この関数はいつ・なぜこの実装になった? git blameとlogで調べて」</li>
+  <li><strong>コンフリクト解消</strong>: 「mainをマージしてコンフリクトを解消して。両方の意図を保つこと」</li>
+  <li><strong>リベース・ブランチ整理</strong>: 「このブランチをmainにリベースして」</li>
+  <li><strong>revert判断</strong>: 「昨日のデプロイ以降のバグ。原因コミットを特定してrevert案を出して」</li>
+  <li><strong>PRレビュー</strong>: <code>/review</code> や「このPRの変更をレビューして」</li>
+  <li><strong>レビュー対応</strong>: <code>/pr-comments</code> でコメントを取得 →「指摘に対応して」</li>
+</ul>
+
+<div class="callout warn"><div class="co-title">⚠️ push系は慎重に</div>
+<p><code>git push --force</code> や履歴書き換えは影響が大きい操作です。Claudeは基本的に慎重に振る舞いますが、承認時は自分でもコマンドを確認しましょう。「force pushは絶対禁止」とCLAUDE.mdに書いておくのも有効です。</p></div>
+
+<h3>こまめなコミット + /rewind の二重安全網</h3>
+<p>エージェントに大きな変更を任せるときの鉄則です。</p>
+<ol>
+  <li>作業前にきれいな状態でコミット(またはブランチを切る)</li>
+  <li>ステップごとにコミットさせる — 「各ステップが終わるたびにコミットして」</li>
+  <li>失敗したら <code>git checkout</code> か <code>/rewind</code> で即座に戻す</li>
+</ol>
+<div class="callout pro"><div class="co-title">🔥 git worktreeで並列Claude</div>
+<p><code>git worktree</code> で同じリポジトリの別ブランチを別ディレクトリに展開し、それぞれでClaude Codeを起動すれば、<strong>機能Aの実装とバグBの修正を並行して</strong>進められます。</p>
+<pre style="margin-bottom:0"><code>git worktree add ../myapp-feature-x feature-x
+cd ../myapp-feature-x && claude</code></pre></div>
+`,
+  quiz: [
+    { q: "Claudeにコミットを頼むと、メッセージはどう決まる?",
+      c: ["常に英語の固定文", "差分と過去のコミットスタイルを見てプロジェクトの流儀に合わせる", "ランダムに生成", "ユーザーが必ず手で書く"],
+      a: 1, e: "git diffとgit logを確認し、既存スタイルに合わせたメッセージを作ります。規約はCLAUDE.mdで指定できます。" },
+    { q: "PR作成・Issue操作をターミナルから完結させるために必要なツールは?",
+      c: ["docker", "gh (GitHub CLI)", "curl", "make"],
+      a: 1, e: "GitHub CLIが入っていれば、ClaudeはghコマンドでPR作成やコメント取得まで行えます。" },
+    { q: "複数のタスクを並行してClaude Codeに進めさせる定番の方法は?",
+      c: ["1つのセッションで交互に指示", "git worktreeで作業ツリーを分けて複数セッションを起動", "リポジトリを毎回クローンし直す", "並行作業は不可能"],
+      a: 1, e: "worktreeならブランチごとに独立したディレクトリで安全に並列作業できます。" }
+  ]
+},
+
+/* ---------- 9 ---------- */
+{
+  id: "custom",
+  title: "カスタムコマンド・スキル・サブエージェント",
+  lead: "繰り返す作業を「自分専用の道具」に変える。ここからがClaude Codeの本領です。",
+  body: `
+<h3>カスタムスラッシュコマンド</h3>
+<p><code>.claude/commands/</code> にMarkdownファイルを置くだけで、<code>/ファイル名</code> がコマンドになります。</p>
+<pre><code><span class="cmt"># .claude/commands/fix-issue.md</span>
+GitHub Issue #$ARGUMENTS を解決してください。手順:
+1. gh issue view $ARGUMENTS で内容を確認
+2. 関連コードを調査し、原因を特定
+3. 修正を実装し、テストを追加
+4. テストが通ることを確認してコミット</code></pre>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> /fix-issue 123
+<span class="out">⏺ gh issue view 123 を実行…</span></code></pre></div>
+<ul>
+  <li><code>$ARGUMENTS</code> にコマンド引数が展開されます。</li>
+  <li><code>~/.claude/commands/</code> に置けば全プロジェクト共通で使えます。</li>
+  <li>プロジェクトの <code>.claude/commands/</code> はgitにコミットしてチームで共有しましょう。</li>
+</ul>
+
+<h3>スキル(Skills)</h3>
+<p>スキルは「手順書 + 補助ファイル」をパッケージ化したものです。<code>.claude/skills/スキル名/SKILL.md</code> に定義し、説明文に基づいて<strong>Claudeが必要なときに自動で読み込みます</strong>(スラッシュコマンドとして手動起動も可能)。</p>
+<pre><code><span class="cmt"># .claude/skills/release-notes/SKILL.md</span>
+---
+name: release-notes
+description: リリースノートを生成する。リリース準備やchangelog作成を頼まれたら使う
+---
+1. 前回タグからのコミットを git log で収集
+2. feat/fix/chore に分類し、ユーザー向けの日本語で要約
+3. CHANGELOG.md の既存フォーマットに従って追記</code></pre>
+<p>「毎回説明している複雑な手順」はスキル化する。これが個人・チームのノウハウを資産化する方法です。</p>
+
+<h3>サブエージェント(Subagents)</h3>
+<p>サブエージェントは、<strong>専用のシステムプロンプト・ツール制限・独立したコンテキスト</strong>を持つ「部下」です。<code>/agents</code> で対話的に作成でき、定義は <code>.claude/agents/*.md</code> に保存されます。</p>
+<pre><code><span class="cmt"># .claude/agents/code-reviewer.md</span>
+---
+name: code-reviewer
+description: コード変更のレビュー担当。変更後のレビューはこのエージェントに任せる
+tools: Read, Grep, Glob   <span class="cmt"># 読み取り専用に制限</span>
+---
+あなたはシニアレビュアーです。セキュリティ・パフォーマンス・
+可読性の観点で診断し、重要度順に指摘してください。</code></pre>
+<p>サブエージェントの利点:</p>
+<ul>
+  <li><strong>コンテキスト分離</strong> — 大量のファイル調査を部下にやらせ、結論だけ受け取る。メインの会話が汚れない。</li>
+  <li><strong>ツール制限</strong> — レビュアーには読み取り専用など、役割に応じた安全設計ができる。</li>
+  <li><strong>並列実行</strong> — 複数のサブエージェントに調査を並行で走らせられる。</li>
+</ul>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> code-reviewer サブエージェントで今回の変更をレビューして</code></pre></div>
+
+<div class="callout tip"><div class="co-title">💡 どれを使う?</div>
+<ul style="margin-bottom:0">
+  <li>決まった手順を<strong>手動で呼びたい</strong> → カスタムスラッシュコマンド</li>
+  <li>状況に応じて<strong>自動で発動してほしい</strong>ノウハウ → スキル</li>
+  <li><strong>役割・権限・コンテキストを分離</strong>したい → サブエージェント</li>
+</ul></div>
+`,
+  quiz: [
+    { q: "カスタムスラッシュコマンドを作るには?",
+      c: [".claude/commands/ にMarkdownファイルを置く", "ソースコードを書いてコンパイルする", "Anthropicに申請する", "settings.jsonにJSONで書く"],
+      a: 0, e: "Markdownを置くだけ。ファイル名がコマンド名になり、$ARGUMENTSで引数を受け取れます。" },
+    { q: "カスタムコマンド内で引数を受け取る変数は?",
+      c: ["$1", "$ARGUMENTS", "%args%", "{{input}}"],
+      a: 1, e: "/fix-issue 123 なら $ARGUMENTS が「123」に展開されます。" },
+    { q: "サブエージェントの最大の利点は?",
+      c: ["料金が無料になる", "コンテキスト分離・ツール制限・並列実行ができる", "インターネットに接続できる", "GPUが使える"],
+      a: 1, e: "独立コンテキストで本体の会話を汚さず、役割ごとの権限設計と並列調査ができます。" }
+  ]
+},
+
+/* ---------- 10 ---------- */
+{
+  id: "hooks",
+  title: "Hooks — 決まりごとを自動化する",
+  lead: "「編集のたびにフォーマッタを必ずかける」——お願いではなく、仕組みで保証する方法。",
+  body: `
+<h3>Hooksとは</h3>
+<p>Hooksは、Claude Codeのライフサイクルの特定の瞬間に<strong>自動実行されるシェルコマンド</strong>です。「〜するたびに必ず〜して」という約束は、プロンプトで頼むと忘れられることがありますが、hookなら<strong>確実に毎回実行されます</strong>。</p>
+
+<h3>主なイベント</h3>
+<div class="table-scroll"><table>
+<tr><th>イベント</th><th>タイミング</th><th>典型的な用途</th></tr>
+<tr><td><code>PreToolUse</code></td><td>ツール実行の直前</td><td>危険コマンドのブロック、実行前チェック</td></tr>
+<tr><td><code>PostToolUse</code></td><td>ツール実行の直後</td><td>編集後のフォーマット、lint実行</td></tr>
+<tr><td><code>UserPromptSubmit</code></td><td>プロンプト送信時</td><td>入力の検証、コンテキスト自動追加</td></tr>
+<tr><td><code>Notification</code></td><td>許可待ちなどの通知時</td><td>デスクトップ通知、Slack通知</td></tr>
+<tr><td><code>Stop</code></td><td>Claudeの応答完了時</td><td>完了音、後処理、追加検証</td></tr>
+<tr><td><code>SessionStart</code></td><td>セッション開始時</td><td>環境セットアップ、依存関係インストール</td></tr>
+<tr><td><code>PreCompact</code></td><td>コンパクト実行前</td><td>履歴の退避</td></tr>
+</table></div>
+
+<h3>例1: 編集したファイルを自動フォーマット</h3>
+<pre><code><span class="cmt">// .claude/settings.json</span>
+{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"PostToolUse"</span>: [{
+      <span class="str">"matcher"</span>: <span class="str">"Edit|Write"</span>,
+      <span class="str">"hooks"</span>: [{
+        <span class="str">"type"</span>: <span class="str">"command"</span>,
+        <span class="str">"command"</span>: <span class="str">"jq -r '.tool_input.file_path' | xargs -r npx prettier --write"</span>
+      }]
+    }]
+  }
+}</code></pre>
+<p>hookコマンドには<strong>ツールの入出力がJSONでstdinに渡されます</strong>。上の例では編集されたファイルパスを取り出してPrettierをかけています。</p>
+
+<h3>例2: 作業完了をデスクトップ通知</h3>
+<pre><code>{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"Notification"</span>: [{
+      <span class="str">"hooks"</span>: [{
+        <span class="str">"type"</span>: <span class="str">"command"</span>,
+        <span class="str">"command"</span>: <span class="str">"osascript -e 'display notification \\"確認待ちです\\" with title \\"Claude Code\\"'"</span>
+      }]
+    }]
+  }
+}</code></pre>
+<p>長い作業を任せて別のことをしていても、許可待ちや完了に気づけます。</p>
+
+<h3>例3: 危険コマンドをブロック(PreToolUse)</h3>
+<p><code>PreToolUse</code> のhookが<strong>終了コード2</strong>を返すと、そのツール実行はブロックされ、stderrの内容がClaudeにフィードバックされます。「本番DBへの接続文字列を含むコマンドは拒否する」のようなガードレールを仕組みとして敷けます。</p>
+
+<div class="callout warn"><div class="co-title">⚠️ hookは無条件に実行される</div>
+<p>hookはあなたの権限で自動実行されるシェルコマンドです。<strong>自分が書いた(または理解した)コマンドだけ</strong>を登録し、他人のリポジトリのhook設定はレビューしてから有効化しましょう。</p></div>
+
+<div class="callout tip"><div class="co-title">💡 設定は /hooks からが簡単</div>
+<p><code>/hooks</code> で対話的に設定できます。また「編集後に必ずlintを実行するhookを設定して」とClaude自身に頼むのも実用的です。</p></div>
+`,
+  quiz: [
+    { q: "「ファイル編集のたびに必ずフォーマッタをかける」最も確実な方法は?",
+      c: ["CLAUDE.mdにお願いを書く", "毎回口頭で頼む", "PostToolUseフックにフォーマッタ実行を登録する", "フォーマットは手動でやる"],
+      a: 2, e: "プロンプトのお願いは忘れられる可能性がありますが、hookは仕組みとして毎回確実に実行されます。" },
+    { q: "ツール実行を直前にブロックできるイベントは?",
+      c: ["PostToolUse", "PreToolUse", "Stop", "SessionStart"],
+      a: 1, e: "PreToolUseで終了コード2を返すと実行がブロックされ、理由がClaudeに伝わります。" },
+    { q: "hookコマンドにツールの情報はどう渡される?",
+      c: ["環境変数のみ", "JSONとしてstdinに渡される", "一時ファイル", "渡されない"],
+      a: 1, e: "tool_inputなどを含むJSONがstdinに流れるので、jq等でパースして使います。" }
+  ]
+},
+
+/* ---------- 11 ---------- */
+{
+  id: "mcp",
+  title: "MCP — 外部ツールへの接続",
+  lead: "Model Context Protocolで、Claude CodeにDB・ブラウザ・Slack・社内APIの「手」を生やします。",
+  body: `
+<h3>MCPとは</h3>
+<p><strong>MCP(Model Context Protocol)</strong>は、AIエージェントに外部ツールを接続するためのオープン規格です。MCPサーバーを追加すると、Claude Codeに新しいツールが増えます。</p>
+<ul>
+  <li>Puppeteer/Playwright MCP → ブラウザを操作し、スクリーンショットを撮る</li>
+  <li>Postgres MCP → データベースに接続してスキーマ確認・クエリ実行</li>
+  <li>GitHub MCP → Issue・PRの操作</li>
+  <li>Sentry / Slack / Notion / 社内API… エコシステムは急速に拡大中</li>
+</ul>
+
+<h3>サーバーの追加</h3>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>terminal</span></div>
+<pre><code><span class="cmt"># stdioサーバー(ローカルプロセス)を追加</span>
+<span class="prompt">$</span> claude mcp add playwright -- npx @playwright/mcp@latest
+
+<span class="cmt"># HTTPサーバーを追加</span>
+<span class="prompt">$</span> claude mcp add --transport http github https://api.githubcopilot.com/mcp/
+
+<span class="cmt"># 一覧・削除</span>
+<span class="prompt">$</span> claude mcp list
+<span class="prompt">$</span> claude mcp remove playwright</code></pre></div>
+<p>セッション中は <code>/mcp</code> で接続状態の確認や、OAuth認証が必要なサーバーへのログインができます。</p>
+
+<h3>3つのスコープ</h3>
+<div class="table-scroll"><table>
+<tr><th>スコープ</th><th>保存先</th><th>用途</th></tr>
+<tr><td><code>local</code>(既定)</td><td>個人設定(そのプロジェクトのみ)</td><td>個人的な実験</td></tr>
+<tr><td><code>project</code></td><td><code>.mcp.json</code>(gitにコミット)</td><td><strong>チーム共有</strong>。リポジトリを開けば全員同じツールが使える</td></tr>
+<tr><td><code>user</code></td><td>ユーザー設定(全プロジェクト)</td><td>どこでも使う汎用ツール</td></tr>
+</table></div>
+<pre><code><span class="cmt"># チーム共有なら -s project で追加 → .mcp.json が生成される</span>
+<span class="prompt">$</span> claude mcp add -s project postgres -- npx @bytebase/dbhub \\
+    --dsn <span class="str">"postgresql://readonly@localhost:5432/dev"</span></code></pre>
+
+<h3>実戦例: ブラウザで動作確認までさせる</h3>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude</span></div>
+<pre><code><span class="prompt">&gt;</span> ログインフォームのバリデーションを実装したら、Playwrightで
+  実際にブラウザを開いて、エラーメッセージが正しく表示されるか
+  スクリーンショットで確認して
+
+<span class="out">⏺ 実装完了。ブラウザで検証します
+⏺ playwright - navigate(http://localhost:3000/login)
+⏺ playwright - screenshot
+  ⎿ エラーメッセージが正しく表示されています</span></code></pre></div>
+<p><strong>「実装 → 自分で動作確認 → 修正」のループをClaudeが自己完結できる</strong>ようになるのがMCPの真価です。</p>
+
+<div class="callout warn"><div class="co-title">⚠️ セキュリティの注意</div>
+<p>MCPサーバーはツール実行の入り口です。<strong>信頼できる提供元のサーバーだけ</strong>を追加し、DBは読み取り専用の接続情報を使うなど、最小権限を心がけましょう。プロジェクトスコープの.mcp.jsonは初回使用時に承認を求められます。</p></div>
+`,
+  quiz: [
+    { q: "MCPの役割を最もよく表しているのは?",
+      c: ["モデルを軽量化する規格", "外部ツール(DB・ブラウザ等)をエージェントに接続する規格", "課金の仕組み", "gitの拡張"],
+      a: 1, e: "MCPはAIに外部ツールを接続するオープン規格。Claude Codeの「手」を増やします。" },
+    { q: "チーム全員で同じMCPサーバーを共有したいときのスコープは?",
+      c: ["local", "project(.mcp.jsonをコミット)", "user", "global"],
+      a: 1, e: "-s project で追加すると .mcp.json に保存され、リポジトリ経由でチーム共有できます。" },
+    { q: "Playwright MCPを追加すると可能になる代表的なことは?",
+      c: ["モデルの学習", "ブラウザ操作とスクリーンショットによる動作確認の自己完結", "GPUレンダリング", "OSの再インストール"],
+      a: 1, e: "実装→ブラウザで確認→修正のループをClaude自身が回せるようになります。" }
+  ]
+},
+
+/* ---------- 12 ---------- */
+{
+  id: "headless",
+  title: "ヘッドレスモードと自動化",
+  lead: "対話の外へ。スクリプト・CI/CD・大量処理にClaude Codeを組み込みます。",
+  body: `
+<h3>ヘッドレスモード: <code>claude -p</code></h3>
+<p><code>-p</code>(print)フラグで、対話UIなしの<strong>ワンショット実行</strong>ができます。UNIXツールのようにパイプにも組み込めます。</p>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>terminal</span></div>
+<pre><code><span class="cmt"># ワンショット実行</span>
+<span class="prompt">$</span> claude -p <span class="str">"このリポジトリのTODOコメントを一覧にして"</span>
+
+<span class="cmt"># パイプで流し込む</span>
+<span class="prompt">$</span> cat error.log | claude -p <span class="str">"このログの根本原因を1行で"</span>
+
+<span class="cmt"># JSON出力(スクリプトから扱いやすい)</span>
+<span class="prompt">$</span> claude -p <span class="str">"lintエラーを数えて"</span> --output-format json</code></pre></div>
+
+<h3>主要なCLIフラグ</h3>
+<div class="table-scroll"><table>
+<tr><th>フラグ</th><th>効果</th></tr>
+<tr><td><code>-p "プロンプト"</code></td><td>非対話のワンショット実行</td></tr>
+<tr><td><code>-c</code> / <code>--continue</code></td><td>直前のセッションを再開</td></tr>
+<tr><td><code>-r</code> / <code>--resume</code></td><td>セッションを選んで再開</td></tr>
+<tr><td><code>--model opus</code></td><td>モデル指定</td></tr>
+<tr><td><code>--output-format json|stream-json</code></td><td>構造化出力</td></tr>
+<tr><td><code>--allowedTools "Read" "Grep"</code></td><td>許可ツールを限定</td></tr>
+<tr><td><code>--max-turns 5</code></td><td>エージェントのターン数上限</td></tr>
+<tr><td><code>--append-system-prompt "..."</code></td><td>システムプロンプトを追記</td></tr>
+</table></div>
+
+<h3>CI/CDへの組み込み例</h3>
+<pre><code><span class="cmt"># .github/workflows/auto-triage.yml(抜粋)</span>
+- name: Issueを自動トリアージ
+  run: |
+    claude -p "Issue #\${{ github.event.issue.number }} を読んで、
+      bug/feature/question のラベルを gh で付けて" \\
+      --allowedTools "Bash(gh issue:*)" "Read"</code></pre>
+<p>GitHub Actions向けには公式の <strong>Claude Code GitHub Action</strong> もあり、PRコメントで <code>@claude</code> にレビューや修正を頼めるようになります。</p>
+
+<h3>大量処理のパターン</h3>
+<div class="term-window"><div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>terminal</span></div>
+<pre><code><span class="cmt"># ファイルごとにループして移行作業(fan-out)</span>
+<span class="prompt">$</span> for f in src/components/*.jsx; do
+    claude -p <span class="str">"$f をTypeScriptに変換して .tsx で保存して"</span> \\
+      --allowedTools <span class="str">"Read"</span> <span class="str">"Write"</span> <span class="str">"Edit"</span>
+  done</code></pre></div>
+
+<h3>Claude Agent SDK</h3>
+<p>さらに本格的に組み込むなら、Claude Codeの中身をライブラリとして使える<strong>Claude Agent SDK</strong>(TypeScript / Python)があります。自社製品にエージェント機能を組み込む、カスタムワークフローを構築する、といった用途に使えます。</p>
+
+<div class="callout warn"><div class="co-title">⚠️ 自動化とパーミッション</div>
+<p>ヘッドレス実行では対話的な承認ができないため、<code>--allowedTools</code> で必要最小限のツールだけを許可するのが基本です。何でも許可した自動実行は、隔離環境以外では避けましょう。</p></div>
+`,
+  quiz: [
+    { q: "対話UIなしでワンショット実行するフラグは?",
+      c: ["-x", "-p", "--quiet", "--batch"],
+      a: 1, e: "claude -p \"プロンプト\" で非対話実行。パイプ入出力やJSON出力と組み合わせられます。" },
+    { q: "ヘッドレス実行時の安全策として基本なのは?",
+      c: ["--dangerously-skip-permissions を常用", "--allowedTools で必要最小限のツールだけ許可", "rootで実行", "ネットを切る"],
+      a: 1, e: "対話承認ができないぶん、許可ツールを明示的に絞るのが基本です。" },
+    { q: "直前のセッションを続きから再開するコマンドは?",
+      c: ["claude -c", "claude --new", "claude -p", "claude reset"],
+      a: 0, e: "-c(--continue)で直前のセッションを、-r(--resume)で選択式の再開ができます。" }
+  ]
+},
+
+/* ---------- 13 ---------- */
+{
+  id: "best",
+  title: "ベストプラクティス総集編",
+  lead: "ここまでの知識を「速くて安全な習慣」に束ねます。迷ったらこの章に戻ってきてください。",
+  body: `
+<h3>1. 指示は具体的に</h3>
+<p>曖昧な指示は曖昧な結果を生みます。<strong>期待する結果・制約・検証方法</strong>まで書きましょう。</p>
+<div class="table-scroll"><table>
+<tr><th>❌ 弱い指示</th><th>✅ 強い指示</th></tr>
+<tr><td>テスト書いて</td><td>foo.pyの正常系・境界値・異常系のテストを書いて。モックは使わず実行して全部通ることを確認して</td></tr>
+<tr><td>なんか遅い、直して</td><td>/api/searchのレスポンスが3秒かかる。プロファイルして原因を特定し、N+1があれば解消して。目標は300ms以下</td></tr>
+<tr><td>いい感じにして</td><td>このコンポーネントを他と同じ構成(hooks +早期return)にリファクタして。挙動は変えないこと</td></tr>
+</table></div>
+
+<h3>2. 検証手段を与える</h3>
+<p>Claudeが<strong>自分の成果を自分で確認できる</strong>とき、品質は跳ね上がります。</p>
+<ul>
+  <li>テストを先に書かせる(TDD): 「まず失敗するテストを書いて。次に実装してテストを通して」</li>
+  <li>「型チェックとlintが通るまで修正を続けて」</li>
+  <li>ブラウザ検証はPlaywright MCP、DB検証はDB MCPを与える</li>
+</ul>
+
+<h3>3. コンテキストを衛生的に保つ</h3>
+<ul>
+  <li>タスクの切れ目で <code>/clear</code>。1セッション1タスクが基本。</li>
+  <li>長丁場は <code>/compact</code>(残したい内容を指示付きで)。</li>
+  <li>大規模調査はサブエージェントに逃がし、本体の会話を汚さない。</li>
+  <li>進捗や設計判断をMarkdownファイルに書き出させると、セッションをまたいで引き継げます。</li>
+</ul>
+
+<h3>4. 止める・戻すをためらわない</h3>
+<ul>
+  <li>方向が違ったら即 <kbd>Esc</kbd>。待つだけ無駄です。</li>
+  <li><kbd>Esc</kbd>×2 や <code>/rewind</code> で巻き戻してやり直し。</li>
+  <li>「一度で完璧」を狙うより、<strong>速い反復</strong>で収束させる方が結果的に速い。</li>
+</ul>
+
+<h3>5. 仕組みで保証する</h3>
+<div class="table-scroll"><table>
+<tr><th>やりたいこと</th><th>使う仕組み</th></tr>
+<tr><td>毎回伝える前提知識</td><td>CLAUDE.md</td></tr>
+<tr><td>毎回必ず実行する処理</td><td>hooks</td></tr>
+<tr><td>繰り返す手順</td><td>カスタムコマンド / スキル</td></tr>
+<tr><td>役割・権限の分離</td><td>サブエージェント</td></tr>
+<tr><td>外部システム連携</td><td>MCP</td></tr>
+<tr><td>危険操作の禁止</td><td>permissions の deny / PreToolUse hook</td></tr>
+</table></div>
+
+<h3>6. 段階的に信頼を広げる</h3>
+<ol>
+  <li>最初は通常モードで、すべてのdiffを読む</li>
+  <li>安全と分かった操作を permissions.allow に追加</li>
+  <li>定型作業は auto-accept モードで任せる</li>
+  <li>大量処理・実験は隔離環境(コンテナ/worktree)で自動実行</li>
+</ol>
+
+<h3>7. チームの資産にする</h3>
+<ul>
+  <li><code>CLAUDE.md</code>、<code>.claude/commands/</code>、<code>.claude/agents/</code>、<code>.mcp.json</code> をコミットする。</li>
+  <li>新メンバーのオンボーディングは「リポジトリをクローンして claude を起動」で完了する状態が理想。</li>
+  <li>うまくいったプロンプトやワークフローをチームで共有する。</li>
+</ul>
+
+<div class="callout pro"><div class="co-title">🔥 最後のひとこと</div>
+<p>Claude Codeは「魔法の自動販売機」ではなく「優秀な同僚」です。良い同僚関係と同じで、<strong>文脈を共有し、期待を明確に伝え、成果を検証し、フィードバックを返す</strong>ほど成果は大きくなります。この講座で学んだ道具は、すべてそのためにあります。</p></div>
+`,
+  quiz: [
+    { q: "最も成果につながる指示の出し方は?",
+      c: ["短ければ短いほど良い", "期待する結果・制約・検証方法まで具体的に書く", "英語で書く", "命令口調で書く"],
+      a: 1, e: "曖昧な指示は曖昧な結果を生みます。ゴールと検証方法まで含めるのが強い指示です。" },
+    { q: "「実装の品質を跳ね上げる」ために与えるべきものは?",
+      c: ["長いお世辞", "自分の成果を自分で検証できる手段(テスト・型チェック・ブラウザ等)", "より高速なCPU", "複数のリポジトリ"],
+      a: 1, e: "テストや型チェック、MCP経由のブラウザ/DBなど、検証ループを自己完結させると品質が大きく向上します。" },
+    { q: "「毎回必ず実行してほしい処理」を保証する正しい手段は?",
+      c: ["CLAUDE.mdにお願いを書く", "hooksに登録する", "毎回手で頼む", "祈る"],
+      a: 1, e: "確率的なお願い(プロンプト)と違い、hooksは仕組みとして毎回確実に実行されます。" }
+  ]
+}
+];
+
+/* =========================================================
+   特別ページ: チートシート / プレイグラウンド
+   ========================================================= */
+const CHEATSHEET = [
+  ["起動・CLI", [
+    ["claude", "対話セッションを開始"],
+    ["claude \"質問\"", "初期プロンプト付きで開始"],
+    ["claude -p \"...\"", "ヘッドレス(非対話)実行"],
+    ["claude -c", "直前のセッションを再開"],
+    ["claude -r", "セッションを選んで再開"],
+    ["claude --model opus", "モデルを指定して起動"],
+    ["claude mcp add <name> -- <cmd>", "MCPサーバーを追加"],
+    ["claude update", "Claude Codeを更新"],
+  ]],
+  ["スラッシュコマンド", [
+    ["/init", "CLAUDE.mdを自動生成"],
+    ["/clear", "コンテキストをリセット"],
+    ["/compact", "会話を要約して圧縮"],
+    ["/model", "モデル切り替え"],
+    ["/memory", "CLAUDE.mdを編集"],
+    ["/permissions", "許可ルールを管理"],
+    ["/agents", "サブエージェント管理"],
+    ["/hooks", "hooks設定"],
+    ["/mcp", "MCPサーバー状態確認"],
+    ["/cost", "トークン使用量を表示"],
+    ["/context", "コンテキスト使用状況"],
+    ["/rewind", "チェックポイントへ巻き戻し"],
+    ["/review", "コードレビューを依頼"],
+    ["/resume", "過去セッションを再開"],
+    ["/vim", "Vimキーバインド"],
+    ["/doctor", "環境診断"],
+    ["/config", "設定画面"],
+    ["/statusline", "ステータスライン設定"],
+    ["/export", "会話をエクスポート"],
+    ["/add-dir", "作業ディレクトリ追加"],
+  ]],
+  ["キー操作", [
+    ["Esc", "作業を中断"],
+    ["Esc Esc", "巻き戻し / 過去メッセージ編集"],
+    ["Shift+Tab", "許可モード切替(通常/auto-accept/plan)"],
+    ["Ctrl+R", "フル出力を表示"],
+    ["Ctrl+V", "画像を貼り付け(macOSでもCtrl)"],
+    ["Ctrl+C", "キャンセル"],
+    ["Ctrl+D", "終了"],
+    ["↑ / ↓", "入力履歴"],
+    ["\\ + Enter", "改行"],
+  ]],
+  ["プレフィックス", [
+    ["@path/to/file", "ファイルをメンション"],
+    ["!command", "シェルコマンドを直接実行"],
+    ["# メモ", "CLAUDE.mdに記憶"],
+    ["/xxx", "スラッシュコマンド"],
+  ]],
+  ["思考キーワード", [
+    ["think", "拡張思考(標準)"],
+    ["think hard", "より深い思考"],
+    ["ultrathink", "最大の思考予算"],
+  ]],
+  ["設定ファイル", [
+    ["CLAUDE.md", "プロジェクトの記憶(チーム共有)"],
+    ["CLAUDE.local.md", "個人メモ(git対象外)"],
+    ["~/.claude/CLAUDE.md", "全プロジェクト共通の記憶"],
+    [".claude/settings.json", "プロジェクト設定(共有)"],
+    [".claude/settings.local.json", "プロジェクト設定(個人)"],
+    ["~/.claude/settings.json", "ユーザー設定"],
+    [".claude/commands/*.md", "カスタムコマンド"],
+    [".claude/skills/*/SKILL.md", "スキル"],
+    [".claude/agents/*.md", "サブエージェント"],
+    [".mcp.json", "MCP設定(チーム共有)"],
+  ]],
+];
+
+/* プレイグラウンドの疑似コマンド */
+const PLAY_RESPONSES = {
+  "help": [["d","利用できる疑似コマンド: claude, /help, /init, /clear, /model, /cost, /compact, # <メモ>, ! <cmd>, @<file>, exit"]],
+  "claude": [
+    ["r","╭──────────────────────────────────────────╮"],
+    ["r","│ ✻ Welcome to Claude Code!                │"],
+    ["r","│   /help でヘルプ、/init でCLAUDE.md生成  │"],
+    ["r","╰──────────────────────────────────────────╯"],
+    ["d","cwd: ~/my-project"]],
+  "/help": [
+    ["r","よく使うコマンド:"],
+    ["r","  /init      CLAUDE.mdを生成"],
+    ["r","  /clear     コンテキストをリセット"],
+    ["r","  /compact   会話を要約して圧縮"],
+    ["r","  /model     モデル切り替え"],
+    ["r","  /cost      使用量を表示"],
+    ["d","(実際にはもっとたくさんあります。本講座の第3章を参照)"]],
+  "/init": [
+    ["r","⏺ コードベースを解析しています…"],
+    ["r","⏺ Glob(**/*) → 42 files"],
+    ["r","⏺ Read(package.json, README.md, src/index.ts)"],
+    ["g","✓ CLAUDE.md を作成しました。ビルドコマンドと規約を記録済み。"]],
+  "/clear": [["g","✓ コンテキストをクリアしました。新しいタスクをどうぞ。"]],
+  "/model": [
+    ["r","現在のモデル: claude-opus-4-8"],
+    ["r","  ❯ Opus   — 最高性能(設計・難タスク)"],
+    ["r","    Sonnet — バランス(日常作業)"],
+    ["r","    Haiku  — 高速・低コスト(単純作業)"]],
+  "/cost": [
+    ["r","Session cost:   $0.42"],
+    ["r","Total tokens:   128,400 (in) / 9,200 (out)"],
+    ["d","こまめな /clear がコスト最適化にも効きます"]],
+  "/compact": [
+    ["r","⏺ 会話を要約しています…"],
+    ["g","✓ 会話を圧縮しました(78,000 → 4,100トークン)。作業を続けられます。"]],
+  "exit": [["d","(疑似セッションを終了しました。claude で再開)"]],
+};
+
+/* =========================================================
+   アプリ本体
+   ========================================================= */
+const LS_KEY = "cc-lecture-progress-v1";
+let progress = {};
+try { progress = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch(e) { progress = {}; }
+function saveProgress(){ localStorage.setItem(LS_KEY, JSON.stringify(progress)); }
+
+let current = location.hash ? location.hash.slice(1) : "intro";
+
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderNav(){
+  const nav = document.getElementById("nav-list");
+  let html = '<div class="nav-group-label">カリキュラム</div>';
+  CHAPTERS.forEach((ch, i) => {
+    const done = progress[ch.id] ? '<span class="done">✓</span>' : "";
+    html += `<button class="nav-item ${current===ch.id?'active':''}" onclick="go('${ch.id}')">
+      <span class="num">${String(i+1).padStart(2,"0")}</span><span>${ch.title}</span>${done}</button>`;
+  });
+  html += '<div class="nav-group-label">リファレンス</div>';
+  html += `<button class="nav-item ${current==='cheatsheet'?'active':''}" onclick="go('cheatsheet')"><span class="num">📋</span><span>チートシート</span></button>`;
+  html += `<button class="nav-item ${current==='playground'?'active':''}" onclick="go('playground')"><span class="num">🖥</span><span>プレイグラウンド</span></button>`;
+  nav.innerHTML = html;
+
+  const doneCount = CHAPTERS.filter(c => progress[c.id]).length;
+  const pct = Math.round(doneCount / CHAPTERS.length * 100);
+  document.getElementById("progress-fill").style.width = pct + "%";
+  document.getElementById("progress-pct").textContent = pct + "%";
+}
+
+function go(id){
+  current = id;
+  location.hash = id;
+  document.getElementById("sidebar").classList.remove("open");
+  render();
+  window.scrollTo({top:0});
+}
+window.addEventListener("hashchange", () => {
+  const id = location.hash.slice(1);
+  if (id && id !== current) { current = id; render(); window.scrollTo({top:0}); }
+});
+
+function render(){
+  renderNav();
+  const c = document.getElementById("content");
+  if (current === "cheatsheet") { c.innerHTML = renderCheatsheet(); bindCheatSearch(); return; }
+  if (current === "playground") { c.innerHTML = renderPlayground(); bindPlayground(); return; }
+
+  const idx = CHAPTERS.findIndex(ch => ch.id === current);
+  const ch = CHAPTERS[idx] || CHAPTERS[0];
+
+  let quizHtml = `<div class="quiz-box" id="quiz">
+    <h3>✏️ 理解度チェック</h3>
+    <p class="quiz-sub">全問正解でこの章がクリアになります(何度でも挑戦できます)。</p>`;
+  ch.quiz.forEach((q, qi) => {
+    quizHtml += `<div class="quiz-q" data-qi="${qi}">
+      <div class="q-text"><span class="q-num">Q${qi+1}.</span>${esc(q.q)}</div>
+      ${q.c.map((choice, ci) => `<button class="choice" onclick="answer('${ch.id}',${qi},${ci},this)">${esc(choice)}</button>`).join("")}
+      <div class="q-explain" id="ex-${qi}"><b>解説:</b> ${esc(q.e)}</div>
+    </div>`;
+  });
+  quizHtml += `<div class="quiz-result" id="quiz-result"></div>
+    <button class="quiz-retry" onclick="render()">🔄 クイズをやり直す</button></div>`;
+
+  const prev = CHAPTERS[idx-1], next = CHAPTERS[idx+1];
+  let pager = '<div class="pager">';
+  pager += prev ? `<button onclick="go('${prev.id}')"><small>← 前の章</small>${prev.title}</button>` : "<span></span>";
+  pager += next ? `<button class="next" onclick="go('${next.id}')"><small>次の章 →</small>${next.title}</button>`
+                : `<button class="next" onclick="go('cheatsheet')"><small>卒業 🎓</small>チートシートへ</button>`;
+  pager += "</div>";
+
+  c.innerHTML = `
+    <div class="chapter-kicker">CHAPTER ${String(idx+1).padStart(2,"0")} / ${CHAPTERS.length}${progress[ch.id] ? ' <span style="color:var(--green)">✓ クリア済み</span>' : ""}</div>
+    <h2 class="chapter-title">${ch.title}</h2>
+    <p class="chapter-lead">${ch.lead}</p>
+    ${ch.body}
+    ${quizHtml}
+    ${pager}`;
+}
+
+const quizState = {};
+function answer(chId, qi, ci, btn){
+  const ch = CHAPTERS.find(c => c.id === chId);
+  const q = ch.quiz[qi];
+  const qDiv = btn.closest(".quiz-q");
+  const choices = qDiv.querySelectorAll(".choice");
+  choices.forEach(b => b.disabled = true);
+  const correct = ci === q.a;
+  btn.classList.add(correct ? "correct" : "wrong");
+  if (!correct) choices[q.a].classList.add("correct");
+  qDiv.querySelector(".q-explain").classList.add("show");
+
+  quizState[chId] = quizState[chId] || {};
+  quizState[chId][qi] = correct;
+
+  const answered = Object.keys(quizState[chId]).length;
+  if (answered === ch.quiz.length) {
+    const allCorrect = ch.quiz.every((_, i) => quizState[chId][i]);
+    const res = document.getElementById("quiz-result");
+    if (allCorrect) {
+      res.className = "quiz-result pass";
+      res.textContent = "🎉 全問正解!この章をクリアしました";
+      progress[chId] = true;
+      saveProgress();
+      renderNav();
+    } else {
+      const score = ch.quiz.filter((_, i) => quizState[chId][i]).length;
+      res.className = "quiz-result fail";
+      res.textContent = `${score} / ${ch.quiz.length} 正解。解説を読んで、もう一度挑戦しましょう`;
+    }
+    delete quizState[chId];
+  }
+}
+
+function renderCheatsheet(){
+  let html = `<div class="chapter-kicker">REFERENCE</div>
+    <h2 class="chapter-title">📋 チートシート</h2>
+    <p class="chapter-lead">印刷・検索して使える早見表。キーワードで絞り込めます。</p>
+    <input id="cheat-search" type="text" placeholder="🔍 検索(例: clear, 画像, mcp, 巻き戻し…)">`;
+  CHEATSHEET.forEach(([group, rows]) => {
+    html += `<h3 class="cheat-group">${group}</h3><div class="table-scroll"><table>
+      <tr><th style="width:42%">コマンド / キー</th><th>説明</th></tr>`;
+    rows.forEach(([cmd, desc]) => {
+      html += `<tr class="cheat-row" data-text="${esc((cmd+" "+desc).toLowerCase())}"><td><code>${esc(cmd)}</code></td><td>${esc(desc)}</td></tr>`;
+    });
+    html += "</table></div>";
+  });
+  return html;
+}
+function bindCheatSearch(){
+  const input = document.getElementById("cheat-search");
+  input.addEventListener("input", () => {
+    const v = input.value.toLowerCase().trim();
+    document.querySelectorAll(".cheat-row").forEach(row => {
+      row.classList.toggle("hidden", v && !row.dataset.text.includes(v));
+    });
+  });
+}
+
+function renderPlayground(){
+  return `<div class="chapter-kicker">REFERENCE</div>
+    <h2 class="chapter-title">🖥 プレイグラウンド</h2>
+    <p class="chapter-lead">安全な疑似ターミナルで、講座に出てきたコマンドの雰囲気を試せます(実際には何も実行されません)。</p>
+    <div class="play-chips">
+      ${["claude","/help","/init","/model","/cost","/compact","/clear","# テストはmake testで実行","! npm test","@src/app.ts を説明して"].map(c =>
+        `<button onclick="playRun('${c.replace(/'/g,"\\'")}')">${esc(c)}</button>`).join("")}
+    </div>
+    <div class="term-window" style="margin-bottom:0">
+      <div class="term-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>claude — 疑似ターミナル</span></div>
+      <div id="play-term"><div class="line d">コマンドを入力するか、上のチップをクリックしてください。「help」で一覧。</div></div>
+    </div>
+    <div id="play-input-row"><span class="ps1">&gt;</span><input id="play-input" type="text" autocomplete="off" placeholder="コマンドを入力して Enter"></div>`;
+}
+function playPrint(lines){
+  const term = document.getElementById("play-term");
+  lines.forEach(([cls, text]) => {
+    const div = document.createElement("div");
+    div.className = "line " + cls;
+    div.textContent = text;
+    term.appendChild(div);
+  });
+  term.scrollTop = term.scrollHeight;
+}
+function playRun(cmd){
+  cmd = cmd.trim();
+  if (!cmd) return;
+  playPrint([["u","> " + cmd]]);
+  const key = cmd.toLowerCase();
+  let out;
+  if (PLAY_RESPONSES[key]) out = PLAY_RESPONSES[key];
+  else if (cmd.startsWith("#")) out = [
+    ["r","⎿ メモリに保存します: 「" + cmd.slice(1).trim() + "」"],
+    ["r","  ❯ プロジェクト (./CLAUDE.md)"],
+    ["r","    ユーザー (~/.claude/CLAUDE.md)"],
+    ["g","✓ CLAUDE.md に追記しました"]];
+  else if (cmd.startsWith("!")) out = [
+    ["d","(bashモード: 「" + cmd.slice(1).trim() + "」を直接実行し、結果がコンテキストに入ります)"],
+    ["r","$ " + cmd.slice(1).trim()],
+    ["g","✓ 実行結果が会話に取り込まれました。「この結果を見て直して」と続けられます"]];
+  else if (cmd.startsWith("@")) out = [
+    ["r","⏺ Read(" + cmd.split(" ")[0].slice(1) + ")"],
+    ["r","⏺ このファイルはアプリのエントリポイントで…(疑似応答)"],
+    ["d","@でファイルを明示すると、探す手間が省けて速く正確になります"]];
+  else if (cmd.startsWith("/")) out = [
+    ["d","(未収録のコマンドです。実物では /help で全一覧が見られます)"]];
+  else out = [
+    ["r","⏺ 了解しました。「" + cmd + "」に取りかかります…(疑似応答)"],
+    ["d","実物のClaude Codeなら、ここでファイル調査や編集が始まります"]];
+  playPrint(out);
+}
+function bindPlayground(){
+  const input = document.getElementById("play-input");
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") { playRun(input.value); input.value = ""; }
+  });
+  input.focus();
+}
+
+render();
+</script>
+</body>
+</html>
